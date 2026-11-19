@@ -7,7 +7,7 @@ O Modo Tangente é um tutor conversacional para apoiar os estudos da disciplina 
 ## Integrantes
 
 - Enzo Akira — GitHub: @HelloAkiraS
-- Pedro Augusto — GitHub: a confirmar
+- Pedro Augusto — GitHub: @pedroAugustoBorges
 - João Lima — GitHub: @jplim18
 - Thiago G. Soares — GitHub: @thigue
 
