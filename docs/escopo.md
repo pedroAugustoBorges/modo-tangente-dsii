@@ -6,7 +6,7 @@ Apoiar alunos de Desenvolvimento de Servidores II em Java, orientação a objeto
 
 ## Jornada principal
 
-1. O aluno se autentica no Spring Security.
+1. O aluno se autentica no Spring Security; o principal autenticado usa o e-mail para o backend resolver o `AppUser.id` persistido.
 2. Escolhe um tópico e um quiz ativo.
 3. Inicia uma tentativa e responde questões de escolha única.
 4. Abre um chat associado à questão daquela tentativa.
@@ -17,7 +17,7 @@ O estilo será descontraído e inspirado no modo de explicar do professor Felipe
 
 ## Domínio persistente
 
-O baseline inicial mapeia nove entidades: `AppUser`, `Topic`, `Quiz`, `QuizQuestion`, `QuizQuestionOption`, `QuizAttempt`, `QuestionAttempt`, `Conversation` e `Message`. As tabelas pertencem ao schema PostgreSQL `public` e são criadas por migrations Flyway. Uma tentativa tem progresso individual, cada questão respondida pertence ao mesmo quiz da tentativa e cada tentativa de questão possui no máximo uma conversa.
+O baseline inicial mapeia nove entidades: `AppUser`, `Topic`, `Quiz`, `QuizQuestion`, `QuizQuestionOption`, `QuizAttempt`, `QuestionAttempt`, `Conversation` e `Message`. As tabelas pertencem ao schema PostgreSQL `public` e são criadas por migrations Flyway. Uma tentativa tem progresso individual, cada questão respondida pertence ao mesmo quiz da tentativa e cada tentativa de questão possui no máximo uma conversa. A primeira API inicia, lista e consulta tentativas do usuário autenticado; o usuário não é recebido no request. A conta é recusada se estiver inativa. O uso com contas reais depende de Enzo ligar o principal autenticado ao `AppUser` persistido, com `Authentication.getName()` igual ao e-mail da conta.
 
 As regras de acesso serão aplicadas pelos serviços com a identidade da sessão. O usuário não pode consultar tentativa ou conversa de outro aluno. O gabarito permanece no backend e a explicação de uma resposta correta depende de política a confirmar pelo grupo.
 
@@ -29,7 +29,7 @@ PostgreSQL será hospedado no Supabase. O schema é aplicado por Flyway; a conex
 
 ## Entrega inicial e próximos módulos
 
-O baseline inclui estrutura Maven/Spring Boot, nove entidades e a migration única V1. Os incrementos seguintes implementam autenticação, catálogo/CRUD, tentativas e correção, chat contextualizado, adapter OpenRouter, telas, testes, OpenAPI e publicação.
+O baseline inclui estrutura Maven/Spring Boot, nove entidades e a migration única V1. O incremento seguinte já adiciona API autenticada para iniciar, listar e consultar tentativas, filtrando pelo proprietário. Faltam integração do login com AppUser, catálogo/CRUD, tentativas por questão e correção, chat contextualizado, adapter OpenRouter, telas, OpenAPI e publicação.
 
 ## Critérios de aceite da jornada
 

@@ -24,7 +24,7 @@ O backend usará autenticação Spring Security. O Supabase será o provedor Pos
 
 ## Estado do projeto
 
-O baseline inicial contém a aplicação Spring Boot, nove entidades JPA e a migration Flyway V1 no schema `public`. O banco Supabase ainda não foi conectado nem alterado. CRUD, autenticação, páginas do quiz, integração OpenRouter e publicação serão concluídos nos incrementos seguintes.
+O baseline inicial contém a aplicação Spring Boot, nove entidades JPA e a migration Flyway V1 no schema `public`. A API já tem rotas protegidas para iniciar, listar e consultar tentativas, com consultas limitadas ao usuário persistido. Para usar essas rotas com contas reais, ainda falta Enzo integrar o login para que o principal Spring Security represente o e-mail de `AppUser`. O catálogo/CRUD, a correção de questões, o chat, as páginas do quiz, OpenRouter e publicação também serão concluídos nos incrementos seguintes. O banco Supabase ainda não foi conectado nem alterado.
 
 ## Execução local
 
