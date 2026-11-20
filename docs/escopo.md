@@ -1,36 +1,42 @@
-# Escopo inicial do Modo Tangente
-
-Proposta de primeira entrega para o grupo de Desenvolvimento de Servidores II. [README do projeto](../README.md)
+# Escopo do Modo Tangente
 
 ## Objetivo
 
-Ajudar estudantes da disciplina a revisar conteúdos pelo chat. O tutor responde dúvidas em português, com explicações diretas e exemplos curtos de código quando ajudarem a entender o assunto. Os temas previstos incluem Java, orientação a objetos, Reflection, Servlets, Spring, Spring Boot e JPA.
+Apoiar alunos de Desenvolvimento de Servidores II em Java, orientação a objetos, Reflection, Servlets, Spring, Spring Boot Web e JPA. A aplicação combina tópicos de estudo, quizzes de múltipla escolha e um tutor conversacional contextualizado por questão.
 
-## Primeira entrega
+## Jornada principal
 
-- **Tirar dúvidas pelo chat.** O estudante inicia uma conversa, envia uma pergunta e recebe uma resposta gerada via OpenRouter.
-- **Continuar uma conversa.** O tutor usa as mensagens anteriores da mesma conversa para responder a perguntas de acompanhamento. O estudante pode reabrir conversas salvas e continuar de onde parou.
-- **Usar material da disciplina.** O grupo seleciona um material para a demonstração e o usa como referência para as respostas sobre o tema escolhido.
-- **Lidar com falhas no serviço de respostas.** Se o OpenRouter estiver indisponível, o chat informa o problema e permite tentar de novo.
+1. O aluno se autentica no Spring Security.
+2. Escolhe um tópico e um quiz ativo.
+3. Inicia uma tentativa e responde questões de escolha única.
+4. Abre um chat associado à questão daquela tentativa.
+5. O servidor monta o contexto com tópico, instruções do quiz, enunciado, alternativas e mensagens anteriores; o navegador não envia um contexto arbitrário.
+6. O tutor responde via OpenRouter e a aplicação persiste mensagens e progresso.
 
-## Base técnica prevista
+O estilo será descontraído e inspirado no modo de explicar do professor Felipe Cannarrozo Lourenço. O produto não se apresenta como o professor nem inventa citações ou falas atribuídas a ele. Exemplos concretos de aula só serão incorporados com autorização.
 
-A interface web conversa com uma API REST em Java e Spring Boot. O backend consulta o modelo pelo OpenRouter e salva as conversas e mensagens em um banco H2 em arquivo, com Spring Data JPA e Hibernate.
+## Domínio persistente
 
-## Critérios de aceite
+O baseline inicial mapeia nove entidades: `AppUser`, `Topic`, `Quiz`, `QuizQuestion`, `QuizQuestionOption`, `QuizAttempt`, `QuestionAttempt`, `Conversation` e `Message`. As tabelas pertencem ao schema PostgreSQL `public` e são criadas por migrations Flyway. Uma tentativa tem progresso individual, cada questão respondida pertence ao mesmo quiz da tentativa e cada tentativa de questão possui no máximo uma conversa.
 
-Na demonstração da primeira entrega, o grupo deve conseguir verificar estes cenários.
+As regras de acesso serão aplicadas pelos serviços com a identidade da sessão. O usuário não pode consultar tentativa ou conversa de outro aluno. O gabarito permanece no backend e a explicação de uma resposta correta depende de política a confirmar pelo grupo.
 
-| Cenário | Resultado esperado |
-| --- | --- |
-| Abrir uma conversa e perguntar o que é um Servlet | O chat exibe uma explicação em português com um exemplo curto em Java. |
-| Perguntar na mesma conversa como adaptar o exemplo para receber um parâmetro da requisição | A resposta adapta o exemplo anterior. |
-| Reiniciar a aplicação e abrir a conversa salva | O histórico aparece na ordem original e é possível enviar outra mensagem. |
-| Fazer uma pergunta coberta pelo material selecionado | A explicação usa um conceito ou exemplo presente nesse material. |
-| Simular uma falha no OpenRouter | O chat mostra uma mensagem de erro clara e permite reenviar a pergunta. |
+## Arquitetura prevista
 
-## Decisões em aberto
+Aplicação monolítica Spring Boot com páginas Thymeleaf e API REST. Controllers recebem requests e DTOs; Services aplicam autorização, validação, montagem do contexto e transações; repositories Spring Data JPA persistem o domínio. OpenRouter é acessado por adapter no backend. A chamada externa ocorre fora de uma transação longa; mensagens idempotentes guardam estado de processamento e resultado.
 
-- Escolher a tecnologia da interface web e o modelo no OpenRouter.
-- Selecionar o material inicial e definir como ele vai chegar ao tutor.
-- Definir como publicar a aplicação e disponibilizar a documentação Swagger/OpenAPI.
+PostgreSQL será hospedado no Supabase. O schema é aplicado por Flyway; a conexão depende de variáveis locais/de ambiente. O acesso ao Supabase e as credenciais OpenRouter serão fornecidos depois. Nenhum comando de migration será executado no banco do grupo sem acesso e revisão.
+
+## Entrega inicial e próximos módulos
+
+O baseline inclui estrutura Maven/Spring Boot, nove entidades e a migration única V1. Os incrementos seguintes implementam autenticação, catálogo/CRUD, tentativas e correção, chat contextualizado, adapter OpenRouter, telas, testes, OpenAPI e publicação.
+
+## Critérios de aceite da jornada
+
+- O aluno autenticado lista tópicos e quizzes ativos e inicia uma tentativa.
+- Alternativas são corrigidas no backend; a resposta selecionada pertence à questão da tentativa.
+- O chat é isolado por questão e por tentativa e recupera o histórico salvo.
+- O servidor monta o contexto da LLM com dados persistidos e nunca expõe a chave de serviço ao browser.
+- Uma falha de OpenRouter não apaga a pergunta nem o histórico anterior.
+- Migrations Flyway e mappings JPA permanecem sincronizados no schema `public`.
+- Nenhum acesso cruzado entre alunos é permitido.
