@@ -1,0 +1,178 @@
+openapi: 3.0.3
+info:
+  title: Modo Tangente API
+  version: 0.3.0
+  description: Contratos de tentativa de quiz e progresso por questão. Requer sessão autenticada.
+servers:
+  - url: /
+security:
+  - sessionCookie: []
+paths:
+  /api/quizzes/{quizId}/attempts:
+    post:
+      operationId: startQuizAttempt
+      summary: Inicia uma tentativa e prepara o progresso das questões ativas
+      parameters:
+        - name: quizId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - $ref: '#/components/parameters/CsrfToken'
+      responses:
+        '201':
+          description: Tentativa iniciada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizAttemptSummary'
+        '401':
+          description: Usuário não autenticado ou conta inativa
+        '404':
+          description: Quiz inexistente ou inativo
+  /api/attempts/{attemptId}:
+    get:
+      operationId: getQuizAttempt
+      summary: Consulta uma tentativa própria com o progresso por questão
+      parameters:
+        - name: attemptId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        '200':
+          description: Tentativa e progresso ordenado pela posição no quiz
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizAttemptDetail'
+        '401':
+          description: Usuário não autenticado ou conta inativa
+        '404':
+          description: Tentativa inexistente ou pertencente a outro usuário
+  /api/attempts/{attemptId}/questions/{questionId}/answer:
+    post:
+      operationId: answerAttemptQuestion
+      summary: Registra a alternativa escolhida pelo aluno
+      description: A primeira resposta é final nesta tentativa. Repetir a mesma alternativa é idempotente; enviar outra alternativa para a questão respondida retorna conflito.
+      parameters:
+        - name: attemptId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - $ref: '#/components/parameters/CsrfToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerQuestionRequest'
+      responses:
+        '200':
+          description: Resposta validada e correção calculada pelo backend
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionAttemptProgress'
+        '400':
+          description: Corpo inválido ou alternativa não positiva
+        '401':
+          description: Usuário não autenticado ou conta inativa
+        '404':
+          description: Tentativa, questão ou alternativa não encontrada para o usuário e questão
+        '409':
+          description: Tentativa encerrada ou questão já respondida com outra alternativa
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+  parameters:
+    CsrfToken:
+      name: X-CSRF-TOKEN
+      in: header
+      required: true
+      description: Token CSRF associado à sessão Spring Security.
+      schema:
+        type: string
+  schemas:
+    QuizAttemptSummary:
+      type: object
+      required: [id, quizId, status, startedAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        quizId:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum: [IN_PROGRESS, COMPLETED, ABANDONED]
+        score:
+          type: number
+          format: double
+          nullable: true
+        startedAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+          nullable: true
+    QuizAttemptDetail:
+      allOf:
+        - $ref: '#/components/schemas/QuizAttemptSummary'
+        - type: object
+          required: [questionAttempts]
+          properties:
+            questionAttempts:
+              type: array
+              items:
+                $ref: '#/components/schemas/QuestionAttemptProgress'
+    AnswerQuestionRequest:
+      type: object
+      required: [selectedOptionId]
+      properties:
+        selectedOptionId:
+          type: integer
+          format: int64
+          minimum: 1
+    QuestionAttemptProgress:
+      type: object
+      required: [questionId, position, answered]
+      properties:
+        questionId:
+          type: integer
+          format: int64
+        position:
+          type: integer
+        selectedOptionId:
+          type: integer
+          format: int64
+          nullable: true
+        answered:
+          type: boolean
+        isCorrect:
+          type: boolean
+          nullable: true
+        answeredAt:
+          type: string
+          format: date-time
+          nullable: true

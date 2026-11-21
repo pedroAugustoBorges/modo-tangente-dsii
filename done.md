@@ -1,34 +1,14 @@
-# Entregue nesta etapa — Modo Tangente
+# Entregas por integrante — Modo Tangente
 
-## Trabalho concluído
+Este índice acompanha o que já foi incorporado ao repositório, por responsável. Os planos detalhados continuam fora do repositório. Atualizado em 21/11/2026.
 
-- Inspecionado o repositório e confirmada a ausência anterior de código Java, entidades JPA e migrations.
-- Atualizado README e escopo para o fluxo tópico → quiz de múltipla escolha → tentativa → conversa por questão, usando Thymeleaf e Supabase PostgreSQL.
-- Criado o baseline de nove entidades JPA e a migration única Flyway V1, com integridade referencial, schema `public`, índice case-insensitive de e-mail e checks de consistência.
-- Adicionada API autenticada para iniciar uma tentativa de quiz ativo, listar tentativas próprias e consultar uma tentativa própria.
-- A identidade do endpoint vem do principal; `userId` não é parâmetro HTTP. Tentativa alheia retorna 404 e conta desativada retorna 401.
-- Atualizados os planos gerais e individuais dos quatro integrantes, preservando sete commits por integrante e ownership sem duplicação de entidade/migration.
-- DBA e tech lead revisaram o modelo e as fronteiras de integração; os ajustes apontados foram incorporados.
+| Integrante | Situação registrada |
+|---|---|
+| Pedro Augusto de Melo Borges | P1, P2 e P3 registrados em [done-pedro-augusto.md](docs/done/pedro-augusto.md). P4 começa após o commit do P3. |
+| Enzo Akira | Commit de escopo e README registrado em [done-enzo-akira.md](docs/done/enzo-akira.md); login, estrutura comum de interface e administração permanecem pendentes de integração. |
+| João Lima | [done-joao-lima.md](docs/done/joao-lima.md) registra a situação observada no histórico; catálogo, CRUD e provedores de contexto continuam dependências de integração. |
+| Thiago G. Soares | [done-thiago-soares.md](docs/done/thiago-soares.md) registra a situação observada no histórico; telas do estudante continuam pendentes de integração. |
 
-## Verificações executadas
+## Próximo marco de integração
 
-- `mvnw.cmd test`: 1 teste de contexto e 4 testes de controller passaram com Spring Boot 3.5.16, Java 17 e H2 isolado.
-- O tech lead revisou P2 sem apontar bloqueio e confirmou a divisão entre Pedro, Enzo e João.
-- Os planos Markdown/Word passaram na validação estrutural; cada integrante contém sete incrementos e o SQL propõe nove tabelas.
-
-## Commits desta etapa
-
-- `6147630` — `feat: cria baseline JPA e migration inicial integrada` (Pedro Augusto de Melo Borges)
-- Segundo incremento de Pedro: API de tentativas, ownership, bloqueio de conta inativa e testes.
-
-## Ainda pendente para o grupo
-
-- Enzo deve integrar o login real com `AppUser`; o contrato exige `Authentication.getName()` como e-mail normalizado.
-- João deve implementar catálogo, CRUD e `QuizContextProvider` sobre as entidades já existentes.
-- Thiago deve implementar o adapter OpenRouter e as páginas de quiz/conversa sobre os endpoints compartilhados.
-- O grupo precisa fornecer usuário/senha de um PostgreSQL de teste isolado e conteúdo de quizzes; a migration deve ser validada em PostgreSQL antes de usar o Supabase do grupo.
-- Ainda falta decidir quando o tutor pode revelar o gabarito, configurar OpenRouter e destino de publicação.
-
-## Limites da verificação
-
-O teste local usa H2 e não executa a migration PostgreSQL V1. Nenhuma conexão ou migration foi realizada no Supabase. O login real e o fluxo ponta a ponta com OpenRouter ainda não estão prontos.
+O P3 salva uma `QuestionAttempt` por questão usando o contrato `QuizQuestionProvider`. Os testes substituem esse provedor por um mock. A implementação real do contrato pertence ao catálogo do João e precisa ser integrada antes de iniciar tentativas com dados reais. O P4 cria ou recupera uma conversa para uma questão da tentativa; não inclui ainda as mensagens nem a chamada ao OpenRouter.

@@ -3,26 +3,39 @@ package br.edu.fatec.modotangente.web;
 import br.edu.fatec.modotangente.domain.AppUser;
 import br.edu.fatec.modotangente.domain.Quiz;
 import br.edu.fatec.modotangente.domain.QuizAttempt;
+import br.edu.fatec.modotangente.domain.QuizQuestion;
+import br.edu.fatec.modotangente.domain.QuizQuestionOption;
 import br.edu.fatec.modotangente.domain.Topic;
 import br.edu.fatec.modotangente.repository.AppUserRepository;
+import br.edu.fatec.modotangente.repository.QuestionAttemptRepository;
 import br.edu.fatec.modotangente.repository.QuizAttemptRepository;
+import br.edu.fatec.modotangente.repository.QuizQuestionOptionRepository;
+import br.edu.fatec.modotangente.repository.QuizQuestionRepository;
 import br.edu.fatec.modotangente.repository.QuizRepository;
 import br.edu.fatec.modotangente.repository.TopicRepository;
+import br.edu.fatec.modotangente.service.QuizQuestionProvider;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -32,15 +45,28 @@ class QuizAttemptControllerTests {
     private static final String STUDENT_EMAIL = "pedro@example.com";
 
     @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
     @Autowired private AppUserRepository appUserRepository;
     @Autowired private TopicRepository topicRepository;
     @Autowired private QuizRepository quizRepository;
     @Autowired private QuizAttemptRepository attemptRepository;
+    @Autowired private QuestionAttemptRepository questionAttemptRepository;
+    @Autowired private QuizQuestionRepository questionRepository;
+    @Autowired private QuizQuestionOptionRepository optionRepository;
+    @MockitoBean private QuizQuestionProvider questionProvider;
 
     private Long quizId;
+    private Long firstQuestionId;
+    private Long secondQuestionId;
+    private Long firstCorrectOptionId;
+    private Long firstIncorrectOptionId;
+    private Long secondCorrectOptionId;
 
     @BeforeEach
     void createFixture() {
+        questionAttemptRepository.deleteAll();
+        attemptRepository.deleteAll();
+
         AppUser student = appUserRepository.findByEmailIgnoreCase(STUDENT_EMAIL).orElseGet(() -> {
             AppUser user = new AppUser();
             user.setFullName("Pedro de Teste");
@@ -63,6 +89,19 @@ class QuizAttemptControllerTests {
         quiz.setDisplayOrder(0);
         quiz.setActive(true);
         quizId = quizRepository.saveAndFlush(quiz).getId();
+
+        QuizQuestion firstQuestion = createQuestion(quizId, 1, "Questão de teste 1");
+        QuizQuestion secondQuestion = createQuestion(quizId, 2, "Questão de teste 2");
+        firstQuestionId = firstQuestion.getId();
+        secondQuestionId = secondQuestion.getId();
+
+        firstCorrectOptionId = createOption(firstQuestionId, 1, "Alternativa correta 1", true).getId();
+        firstIncorrectOptionId = createOption(firstQuestionId, 2, "Alternativa incorreta 1", false).getId();
+        secondCorrectOptionId = createOption(secondQuestionId, 1, "Alternativa correta 2", true).getId();
+
+        when(questionProvider.listActiveForAttempt(quizId)).thenReturn(List.of(
+                new QuizQuestionProvider.QuestionReference(firstQuestionId, 1),
+                new QuizQuestionProvider.QuestionReference(secondQuestionId, 2)));
     }
 
     @Test
@@ -82,17 +121,84 @@ class QuizAttemptControllerTests {
         otherAttempt.setStatus("IN_PROGRESS");
         attemptRepository.saveAndFlush(otherAttempt);
 
-        mockMvc.perform(post("/api/quizzes/{quizId}/attempts", quizId).with(csrf()))
+        MvcResult result = mockMvc.perform(post("/api/quizzes/{quizId}/attempts", quizId).with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.quizId").value(quizId.intValue()))
                 .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
-                .andExpect(jsonPath("$.userId").doesNotExist());
+                .andExpect(jsonPath("$.userId").doesNotExist())
+                .andReturn();
 
+        Long attemptId = attemptId(result);
         mockMvc.perform(get("/api/attempts"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$..quizId", hasItem(quizId.intValue())))
                 .andExpect(jsonPath("$.length()").value(1));
+
+        mockMvc.perform(get("/api/attempts/{attemptId}", attemptId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.questionAttempts.length()").value(2));
+    }
+
+    @Test
+    @WithMockUser(username = STUDENT_EMAIL)
+    void initializesOrderedProgressAndRecordsOneFinalAnswer() throws Exception {
+        Long attemptId = startAttempt();
+
+        mockMvc.perform(get("/api/attempts/{attemptId}", attemptId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.questionAttempts.length()").value(2))
+                .andExpect(jsonPath("$.questionAttempts[0].questionId").value(firstQuestionId.intValue()))
+                .andExpect(jsonPath("$.questionAttempts[0].answered").value(false))
+                .andExpect(jsonPath("$.questionAttempts[1].questionId").value(secondQuestionId.intValue()))
+                .andExpect(jsonPath("$.questionAttempts[0].correctOptionId").doesNotExist());
+
+        mockMvc.perform(post(
+                        "/api/attempts/{attemptId}/questions/{questionId}/answer",
+                        attemptId,
+                        firstQuestionId)
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"selectedOptionId\":" + firstCorrectOptionId + "}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.questionId").value(firstQuestionId.intValue()))
+                .andExpect(jsonPath("$.selectedOptionId").value(firstCorrectOptionId.intValue()))
+                .andExpect(jsonPath("$.answered").value(true))
+                .andExpect(jsonPath("$.isCorrect").value(true));
+
+        mockMvc.perform(post(
+                        "/api/attempts/{attemptId}/questions/{questionId}/answer",
+                        attemptId,
+                        firstQuestionId)
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"selectedOptionId\":" + firstCorrectOptionId + "}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isCorrect").value(true));
+
+        mockMvc.perform(post(
+                        "/api/attempts/{attemptId}/questions/{questionId}/answer",
+                        attemptId,
+                        firstQuestionId)
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"selectedOptionId\":" + firstIncorrectOptionId + "}"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    @WithMockUser(username = STUDENT_EMAIL)
+    void rejectsAnOptionThatBelongsToAnotherQuestion() throws Exception {
+        Long attemptId = startAttempt();
+
+        mockMvc.perform(post(
+                        "/api/attempts/{attemptId}/questions/{questionId}/answer",
+                        attemptId,
+                        firstQuestionId)
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"selectedOptionId\":" + secondCorrectOptionId + "}"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -140,5 +246,40 @@ class QuizAttemptControllerTests {
 
         mockMvc.perform(get("/api/attempts"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    private Long startAttempt() throws Exception {
+        MvcResult result = mockMvc.perform(post("/api/quizzes/{quizId}/attempts", quizId).with(csrf()))
+                .andExpect(status().isCreated())
+                .andReturn();
+        return attemptId(result);
+    }
+
+    private Long attemptId(MvcResult result) throws Exception {
+        JsonNode response = objectMapper.readTree(result.getResponse().getContentAsString());
+        return response.get("id").asLong();
+    }
+
+    private QuizQuestion createQuestion(Long parentQuizId, int position, String statement) {
+        QuizQuestion question = new QuizQuestion();
+        question.setQuizId(parentQuizId);
+        question.setPosition(position);
+        question.setStatement(statement);
+        question.setPoints(java.math.BigDecimal.ONE);
+        question.setActive(true);
+        return questionRepository.saveAndFlush(question);
+    }
+
+    private QuizQuestionOption createOption(
+            Long parentQuestionId,
+            int position,
+            String text,
+            boolean correct) {
+        QuizQuestionOption option = new QuizQuestionOption();
+        option.setQuestionId(parentQuestionId);
+        option.setPosition(position);
+        option.setOptionText(text);
+        option.setCorrect(correct);
+        return optionRepository.saveAndFlush(option);
     }
 }
