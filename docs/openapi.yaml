@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: Modo Tangente API
-  version: 0.3.0
-  description: Contratos de tentativa de quiz e progresso por questão. Requer sessão autenticada.
+  version: 0.4.0
+  description: Contratos de tentativas, respostas e conversas por questão. Requer sessão autenticada.
 servers:
   - url: /
 security:
@@ -97,6 +97,73 @@ paths:
           description: Tentativa, questão ou alternativa não encontrada para o usuário e questão
         '409':
           description: Tentativa encerrada ou questão já respondida com outra alternativa
+  /api/attempts/{attemptId}/questions/{questionId}/conversation:
+    get:
+      operationId: getAttemptQuestionConversation
+      summary: Consulta a conversa já criada para uma questão da tentativa
+      parameters:
+        - name: attemptId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        '200':
+          description: Conversa existente, ainda sem mensagens neste incremento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationSummary'
+        '401':
+          description: Usuário não autenticado ou conta inativa
+        '404':
+          description: Tentativa alheia/inexistente, questão não vinculada ou conversa ainda não criada
+    post:
+      operationId: getOrCreateAttemptQuestionConversation
+      summary: Cria ou recupera a conversa única da questão nesta tentativa
+      description: A criação é lazy e protegida por ownership. Repetir a chamada retorna a conversa existente. Conversas não são criadas ao iniciar o quiz.
+      parameters:
+        - name: attemptId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - $ref: '#/components/parameters/CsrfToken'
+      responses:
+        '201':
+          description: Conversa criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationSummary'
+        '200':
+          description: Conversa que já existia para esta questão e tentativa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationSummary'
+        '401':
+          description: Usuário não autenticado ou conta inativa
+        '404':
+          description: Tentativa alheia/inexistente ou questão não vinculada à tentativa
 components:
   securitySchemes:
     sessionCookie:
@@ -176,3 +243,19 @@ components:
           type: string
           format: date-time
           nullable: true
+    ConversationSummary:
+      type: object
+      required: [id, questionAttemptId, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        questionAttemptId:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

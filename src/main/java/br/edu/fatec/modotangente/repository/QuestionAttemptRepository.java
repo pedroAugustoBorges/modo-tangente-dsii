@@ -21,6 +21,8 @@ public interface QuestionAttemptRepository extends JpaRepository<QuestionAttempt
             """)
     List<QuestionAttempt> findAllForAttemptOrdered(@Param("quizAttemptId") Long quizAttemptId);
 
+    Optional<QuestionAttempt> findByQuizAttemptIdAndQuestionId(Long quizAttemptId, Long questionId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
             select questionAttempt

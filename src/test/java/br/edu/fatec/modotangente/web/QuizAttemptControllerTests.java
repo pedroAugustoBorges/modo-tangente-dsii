@@ -1,12 +1,15 @@
 package br.edu.fatec.modotangente.web;
 
 import br.edu.fatec.modotangente.domain.AppUser;
+import br.edu.fatec.modotangente.domain.Conversation;
 import br.edu.fatec.modotangente.domain.Quiz;
 import br.edu.fatec.modotangente.domain.QuizAttempt;
+import br.edu.fatec.modotangente.domain.QuestionAttempt;
 import br.edu.fatec.modotangente.domain.QuizQuestion;
 import br.edu.fatec.modotangente.domain.QuizQuestionOption;
 import br.edu.fatec.modotangente.domain.Topic;
 import br.edu.fatec.modotangente.repository.AppUserRepository;
+import br.edu.fatec.modotangente.repository.ConversationRepository;
 import br.edu.fatec.modotangente.repository.QuestionAttemptRepository;
 import br.edu.fatec.modotangente.repository.QuizAttemptRepository;
 import br.edu.fatec.modotangente.repository.QuizQuestionOptionRepository;
@@ -47,6 +50,7 @@ class QuizAttemptControllerTests {
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
     @Autowired private AppUserRepository appUserRepository;
+    @Autowired private ConversationRepository conversationRepository;
     @Autowired private TopicRepository topicRepository;
     @Autowired private QuizRepository quizRepository;
     @Autowired private QuizAttemptRepository attemptRepository;
@@ -64,6 +68,7 @@ class QuizAttemptControllerTests {
 
     @BeforeEach
     void createFixture() {
+        conversationRepository.deleteAll();
         questionAttemptRepository.deleteAll();
         attemptRepository.deleteAll();
 
@@ -203,6 +208,74 @@ class QuizAttemptControllerTests {
 
     @Test
     @WithMockUser(username = STUDENT_EMAIL)
+    void lazilyCreatesOneConversationForEachQuestionAttempt() throws Exception {
+        Long attemptId = startAttempt();
+        org.junit.jupiter.api.Assertions.assertEquals(0, conversationRepository.count());
+
+        String path = "/api/attempts/{attemptId}/questions/{questionId}/conversation";
+        mockMvc.perform(get(path, attemptId, firstQuestionId))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(post(path, attemptId, Long.MAX_VALUE).with(csrf()))
+                .andExpect(status().isNotFound());
+
+        MvcResult created = mockMvc.perform(post(path, attemptId, firstQuestionId).with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.questionAttemptId").isNumber())
+                .andReturn();
+        Long firstConversationId = conversationId(created);
+
+        mockMvc.perform(post(path, attemptId, firstQuestionId).with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(firstConversationId.intValue()));
+
+        mockMvc.perform(get(path, attemptId, firstQuestionId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(firstConversationId.intValue()));
+
+        Long secondAttemptId = startAttempt();
+        mockMvc.perform(post(path, secondAttemptId, firstQuestionId).with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(org.hamcrest.Matchers.not(firstConversationId.intValue())));
+
+        org.junit.jupiter.api.Assertions.assertEquals(2, conversationRepository.count());
+    }
+
+    @Test
+    @WithMockUser(username = STUDENT_EMAIL)
+    void doesNotRevealAConversationOwnedByAnotherStudent() throws Exception {
+        AppUser otherStudent = new AppUser();
+        otherStudent.setFullName("Outro aluno");
+        otherStudent.setEmail("outro@example.com");
+        otherStudent.setPasswordHash("not-used-in-mock-auth");
+        otherStudent.setRole("STUDENT");
+        otherStudent.setActive(true);
+        otherStudent = appUserRepository.saveAndFlush(otherStudent);
+
+        QuizAttempt otherAttempt = new QuizAttempt();
+        otherAttempt.setUserId(otherStudent.getId());
+        otherAttempt.setQuizId(quizId);
+        otherAttempt.setStatus("IN_PROGRESS");
+        otherAttempt = attemptRepository.saveAndFlush(otherAttempt);
+
+        QuestionAttempt otherQuestionAttempt = new QuestionAttempt();
+        otherQuestionAttempt.setQuizAttemptId(otherAttempt.getId());
+        otherQuestionAttempt.setQuizId(quizId);
+        otherQuestionAttempt.setQuestionId(firstQuestionId);
+        otherQuestionAttempt = questionAttemptRepository.saveAndFlush(otherQuestionAttempt);
+
+        Conversation otherConversation = new Conversation();
+        otherConversation.setQuestionAttemptId(otherQuestionAttempt.getId());
+        conversationRepository.saveAndFlush(otherConversation);
+
+        String path = "/api/attempts/{attemptId}/questions/{questionId}/conversation";
+        mockMvc.perform(get(path, otherAttempt.getId(), firstQuestionId))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(post(path, otherAttempt.getId(), firstQuestionId).with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = STUDENT_EMAIL)
     void doesNotRevealAnAttemptOwnedByAnotherStudent() throws Exception {
         AppUser otherStudent = new AppUser();
         otherStudent.setFullName("Outro estudante");
@@ -256,6 +329,11 @@ class QuizAttemptControllerTests {
     }
 
     private Long attemptId(MvcResult result) throws Exception {
+        JsonNode response = objectMapper.readTree(result.getResponse().getContentAsString());
+        return response.get("id").asLong();
+    }
+
+    private Long conversationId(MvcResult result) throws Exception {
         JsonNode response = objectMapper.readTree(result.getResponse().getContentAsString());
         return response.get("id").asLong();
     }

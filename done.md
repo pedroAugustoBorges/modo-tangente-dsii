@@ -4,10 +4,10 @@ Este índice acompanha o que já foi incorporado ao repositório, por responsáv
 
 | Integrante | Situação registrada |
 |---|---|
-| Pedro Augusto de Melo Borges | P1, P2 e P3 registrados em [done-pedro-augusto.md](docs/done/pedro-augusto.md). P4 começa após o commit do P3. |
+| Pedro Augusto de Melo Borges | P1–P4 registrados em [done-pedro-augusto.md](docs/done/pedro-augusto.md); P4 foi implementado e validado neste commit local. |
 | Enzo Akira | Commit de escopo e README registrado em [done-enzo-akira.md](docs/done/enzo-akira.md); login, estrutura comum de interface e administração permanecem pendentes de integração. |
 | João Lima | [done-joao-lima.md](docs/done/joao-lima.md) registra a situação observada no histórico; catálogo, CRUD e provedores de contexto continuam dependências de integração. |
-| Thiago G. Soares | [done-thiago-soares.md](docs/done/thiago-soares.md) registra a situação observada no histórico; telas do estudante continuam pendentes de integração. |
+| Thiago G. Soares | Três commits adicionaram a estrutura visual inicial; [done-thiago-soares.md](docs/done/thiago-soares.md) registra o que já está no repositório e as integrações ainda pendentes. |
 
 ## Próximo marco de integração
 
