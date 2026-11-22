@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: Modo Tangente API
-  version: 0.4.0
-  description: Contratos de tentativas, respostas e conversas por questão. Requer sessão autenticada.
+  version: 0.5.0
+  description: Contratos de tentativas, respostas, conversas e mensagens. Requer sessão autenticada.
 servers:
   - url: /
 security:
@@ -164,6 +164,79 @@ paths:
           description: Usuário não autenticado ou conta inativa
         '404':
           description: Tentativa alheia/inexistente ou questão não vinculada à tentativa
+  /api/conversations/{conversationId}/messages:
+    get:
+      operationId: listConversationMessages
+      summary: Lista o histórico ordenado de uma conversa própria
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        '200':
+          description: Mensagens ordenadas por data de criação e ID
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageView'
+        '401':
+          description: Usuário não autenticado ou conta inativa
+        '404':
+          description: Conversa inexistente ou pertencente a outro usuário
+    post:
+      operationId: sendConversationMessage
+      summary: Persiste uma mensagem do aluno e solicita uma resposta do tutor
+      description: O backend valida a propriedade da conversa, recebe somente conteúdo e requestId, e obtém a resposta por um serviço de tutor substituível. Repetir o mesmo requestId e conteúdo não duplica mensagens; reutilizar o ID com outro conteúdo retorna conflito.
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - $ref: '#/components/parameters/CsrfToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '201':
+          description: Nova mensagem e resposta do tutor persistidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageExchangeResponse'
+        '200':
+          description: Resultado concluído recuperado por requestId ou retry concluído
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageExchangeResponse'
+        '202':
+          description: Requisição com esse requestId ainda está em processamento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageExchangeResponse'
+        '400':
+          description: Conteúdo vazio ou requestId ausente/inválido
+        '401':
+          description: Usuário não autenticado ou conta inativa
+        '404':
+          description: Conversa inexistente ou pertencente a outro usuário
+        '409':
+          description: requestId já usado com conteúdo diferente
+        '502':
+          description: Tutor indisponível; mensagem fica registrada como FAILED e pode ser reenviada
 components:
   securitySchemes:
     sessionCookie:
@@ -259,3 +332,50 @@ components:
         updatedAt:
           type: string
           format: date-time
+    SendMessageRequest:
+      type: object
+      required: [content, requestId]
+      properties:
+        content:
+          type: string
+          minLength: 1
+        requestId:
+          type: string
+          format: uuid
+    MessageView:
+      type: object
+      required: [id, senderRole, content, createdAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        senderRole:
+          type: string
+          enum: [STUDENT, TUTOR]
+        content:
+          type: string
+        requestId:
+          type: string
+          format: uuid
+          nullable: true
+        replyToMessageId:
+          type: integer
+          format: int64
+          nullable: true
+        llmStatus:
+          type: string
+          enum: [PROCESSING, COMPLETED, FAILED]
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    MessageExchangeResponse:
+      type: object
+      required: [studentMessage, tutorMessage]
+      properties:
+        studentMessage:
+          $ref: '#/components/schemas/MessageView'
+        tutorMessage:
+          allOf:
+            - $ref: '#/components/schemas/MessageView'
+          nullable: true

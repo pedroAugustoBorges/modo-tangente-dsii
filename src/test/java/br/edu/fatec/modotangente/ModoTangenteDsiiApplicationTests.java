@@ -1,6 +1,7 @@
 package br.edu.fatec.modotangente;
 
 import br.edu.fatec.modotangente.service.QuizQuestionProvider;
+import br.edu.fatec.modotangente.service.TutorService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -12,6 +13,9 @@ class ModoTangenteDsiiApplicationTests {
 
 	@MockitoBean
 	private QuizQuestionProvider questionProvider;
+
+	@MockitoBean
+	private TutorService tutorService;
 
 	@Test
 	void contextLoads() {

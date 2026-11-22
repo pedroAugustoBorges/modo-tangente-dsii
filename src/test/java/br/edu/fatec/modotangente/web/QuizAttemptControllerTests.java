@@ -2,6 +2,7 @@ package br.edu.fatec.modotangente.web;
 
 import br.edu.fatec.modotangente.domain.AppUser;
 import br.edu.fatec.modotangente.domain.Conversation;
+import br.edu.fatec.modotangente.domain.Message;
 import br.edu.fatec.modotangente.domain.Quiz;
 import br.edu.fatec.modotangente.domain.QuizAttempt;
 import br.edu.fatec.modotangente.domain.QuestionAttempt;
@@ -10,6 +11,7 @@ import br.edu.fatec.modotangente.domain.QuizQuestionOption;
 import br.edu.fatec.modotangente.domain.Topic;
 import br.edu.fatec.modotangente.repository.AppUserRepository;
 import br.edu.fatec.modotangente.repository.ConversationRepository;
+import br.edu.fatec.modotangente.repository.MessageRepository;
 import br.edu.fatec.modotangente.repository.QuestionAttemptRepository;
 import br.edu.fatec.modotangente.repository.QuizAttemptRepository;
 import br.edu.fatec.modotangente.repository.QuizQuestionOptionRepository;
@@ -17,6 +19,8 @@ import br.edu.fatec.modotangente.repository.QuizQuestionRepository;
 import br.edu.fatec.modotangente.repository.QuizRepository;
 import br.edu.fatec.modotangente.repository.TopicRepository;
 import br.edu.fatec.modotangente.service.QuizQuestionProvider;
+import br.edu.fatec.modotangente.service.TutorService;
+import br.edu.fatec.modotangente.web.dto.SendMessageRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +35,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -39,6 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.UUID;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -51,6 +63,7 @@ class QuizAttemptControllerTests {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private AppUserRepository appUserRepository;
     @Autowired private ConversationRepository conversationRepository;
+    @Autowired private MessageRepository messageRepository;
     @Autowired private TopicRepository topicRepository;
     @Autowired private QuizRepository quizRepository;
     @Autowired private QuizAttemptRepository attemptRepository;
@@ -58,6 +71,7 @@ class QuizAttemptControllerTests {
     @Autowired private QuizQuestionRepository questionRepository;
     @Autowired private QuizQuestionOptionRepository optionRepository;
     @MockitoBean private QuizQuestionProvider questionProvider;
+    @MockitoBean private TutorService tutorService;
 
     private Long quizId;
     private Long firstQuestionId;
@@ -68,6 +82,7 @@ class QuizAttemptControllerTests {
 
     @BeforeEach
     void createFixture() {
+        messageRepository.deleteAll();
         conversationRepository.deleteAll();
         questionAttemptRepository.deleteAll();
         attemptRepository.deleteAll();
@@ -107,6 +122,10 @@ class QuizAttemptControllerTests {
         when(questionProvider.listActiveForAttempt(quizId)).thenReturn(List.of(
                 new QuizQuestionProvider.QuestionReference(firstQuestionId, 1),
                 new QuizQuestionProvider.QuestionReference(secondQuestionId, 2)));
+        when(tutorService.generateReply(anyLong(), anyList())).thenAnswer(invocation -> {
+            List<TutorService.TutorTurn> history = invocation.getArgument(1);
+            return "Resposta de teste: " + history.get(history.size() - 1).content();
+        });
     }
 
     @Test
@@ -272,6 +291,144 @@ class QuizAttemptControllerTests {
                 .andExpect(status().isNotFound());
         mockMvc.perform(post(path, otherAttempt.getId(), firstQuestionId).with(csrf()))
                 .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/api/conversations/{conversationId}/messages", otherConversation.getId()))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(post("/api/conversations/{conversationId}/messages", otherConversation.getId())
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(
+                                new SendMessageRequest("Não deve ser salva", UUID.randomUUID()))))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = STUDENT_EMAIL)
+    void sendsMessagesPersistsRepliesAndReusesTheSameRequestId() throws Exception {
+        Long attemptId = startAttempt();
+        Long conversationId = startConversation(attemptId, firstQuestionId);
+        UUID requestId = UUID.randomUUID();
+        String path = "/api/conversations/{conversationId}/messages";
+        String requestBody = objectMapper.writeValueAsString(new SendMessageRequest("O que é Spring Boot?", requestId));
+
+        MvcResult created = mockMvc.perform(post(path, conversationId)
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.studentMessage.senderRole").value("STUDENT"))
+                .andExpect(jsonPath("$.studentMessage.llmStatus").value("COMPLETED"))
+                .andExpect(jsonPath("$.tutorMessage.senderRole").value("TUTOR"))
+                .andExpect(jsonPath("$.tutorMessage.content").value("Resposta de teste: O que é Spring Boot?"))
+                .andReturn();
+        JsonNode firstResponse = objectMapper.readTree(created.getResponse().getContentAsString());
+        long studentMessageId = firstResponse.path("studentMessage").path("id").asLong();
+        long tutorMessageId = firstResponse.path("tutorMessage").path("id").asLong();
+
+        mockMvc.perform(post(path, conversationId)
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.studentMessage.id").value(studentMessageId))
+                .andExpect(jsonPath("$.tutorMessage.id").value(tutorMessageId));
+
+        mockMvc.perform(post(path, conversationId)
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(
+                                new SendMessageRequest("Conteúdo diferente", requestId))))
+                .andExpect(status().isConflict());
+
+        verify(tutorService, times(1)).generateReply(eq(conversationId), anyList());
+        mockMvc.perform(get(path, conversationId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].senderRole").value("STUDENT"))
+                .andExpect(jsonPath("$[1].senderRole").value("TUTOR"))
+                .andExpect(jsonPath("$[1].replyToMessageId").value(studentMessageId));
+    }
+
+    @Test
+    @WithMockUser(username = STUDENT_EMAIL)
+    void returnsMessagesInStableOrder() throws Exception {
+        Long attemptId = startAttempt();
+        Long conversationId = startConversation(attemptId, firstQuestionId);
+        String path = "/api/conversations/{conversationId}/messages";
+
+        mockMvc.perform(post(path, conversationId)
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(
+                                new SendMessageRequest("Primeira pergunta", UUID.randomUUID()))))
+                .andExpect(status().isCreated());
+        mockMvc.perform(post(path, conversationId)
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(
+                                new SendMessageRequest("Segunda pergunta", UUID.randomUUID()))))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get(path, conversationId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(4))
+                .andExpect(jsonPath("$[0].content").value("Primeira pergunta"))
+                .andExpect(jsonPath("$[1].content").value("Resposta de teste: Primeira pergunta"))
+                .andExpect(jsonPath("$[2].content").value("Segunda pergunta"))
+                .andExpect(jsonPath("$[3].content").value("Resposta de teste: Segunda pergunta"));
+    }
+
+    @Test
+    @WithMockUser(username = STUDENT_EMAIL)
+    void reportsAnExistingProcessingRequestWithoutCallingTheTutorAgain() throws Exception {
+        Long attemptId = startAttempt();
+        Long conversationId = startConversation(attemptId, firstQuestionId);
+        UUID requestId = UUID.randomUUID();
+        Message pending = new Message();
+        pending.setConversationId(conversationId);
+        pending.setSenderRole("STUDENT");
+        pending.setContent("Pergunta em andamento");
+        pending.setRequestId(requestId);
+        pending.setLlmStatus("PROCESSING");
+        pending = messageRepository.saveAndFlush(pending);
+
+        mockMvc.perform(post("/api/conversations/{conversationId}/messages", conversationId)
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(
+                                new SendMessageRequest(pending.getContent(), requestId))))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.studentMessage.id").value(pending.getId()))
+                .andExpect(jsonPath("$.studentMessage.llmStatus").value("PROCESSING"))
+                .andExpect(jsonPath("$.tutorMessage").doesNotExist());
+
+        verifyNoInteractions(tutorService);
+    }
+
+    @Test
+    @WithMockUser(username = STUDENT_EMAIL)
+    void marksFailedTutorRequestsAndAllowsRetryWithTheSameRequestId() throws Exception {
+        Long attemptId = startAttempt();
+        Long conversationId = startConversation(attemptId, firstQuestionId);
+        UUID requestId = UUID.randomUUID();
+        String path = "/api/conversations/{conversationId}/messages";
+        String body = objectMapper.writeValueAsString(new SendMessageRequest("Pergunta recuperável", requestId));
+        doThrow(new IllegalStateException("falha simulada"))
+                .doReturn("Resposta após retry")
+                .when(tutorService).generateReply(anyLong(), anyList());
+
+        mockMvc.perform(post(path, conversationId).with(csrf()).contentType("application/json").content(body))
+                .andExpect(status().isBadGateway());
+        org.junit.jupiter.api.Assertions.assertEquals(
+                "FAILED", messageRepository.findByConversationIdAndRequestId(conversationId, requestId)
+                        .orElseThrow().getLlmStatus());
+
+        mockMvc.perform(post(path, conversationId).with(csrf()).contentType("application/json").content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.studentMessage.llmStatus").value("COMPLETED"))
+                .andExpect(jsonPath("$.tutorMessage.content").value("Resposta após retry"));
+
+        org.junit.jupiter.api.Assertions.assertEquals(2, messageRepository.count());
     }
 
     @Test
@@ -336,6 +493,14 @@ class QuizAttemptControllerTests {
     private Long conversationId(MvcResult result) throws Exception {
         JsonNode response = objectMapper.readTree(result.getResponse().getContentAsString());
         return response.get("id").asLong();
+    }
+
+    private Long startConversation(Long attemptId, Long questionId) throws Exception {
+        String path = "/api/attempts/{attemptId}/questions/{questionId}/conversation";
+        MvcResult result = mockMvc.perform(post(path, attemptId, questionId).with(csrf()))
+                .andExpect(status().isCreated())
+                .andReturn();
+        return conversationId(result);
     }
 
     private QuizQuestion createQuestion(Long parentQuizId, int position, String statement) {

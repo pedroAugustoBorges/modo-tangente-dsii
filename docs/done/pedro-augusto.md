@@ -1,6 +1,6 @@
 # Registro de entregas — Pedro Augusto de Melo Borges
 
-Atualizado em 21/11/2026. Este arquivo registra entregas incorporadas pelo Pedro e o próximo trabalho da sua trilha; o plano detalhado permanece fora do repositório.
+Atualizado em 22/11/2026. Este arquivo registra entregas incorporadas pelo Pedro e o próximo trabalho da sua trilha; o plano detalhado permanece fora do repositório.
 
 ## Entregue
 
@@ -27,11 +27,20 @@ O serviço do Pedro consome `QuizQuestionProvider.listActiveForAttempt(quizId)`,
 - Contrato OpenAPI atualizado. Testes cobrem criação lazy, POST repetido, GET, separação entre tentativas e 404 para conteúdo de outro aluno.
 - Validação local do P4: `mvnw.cmd -q -ntp test`, 9 testes aprovados; YAML do OpenAPI parseado com sucesso.
 
-## Depois do P4
+## P5 — Mensagens e histórico (entregue neste commit)
 
-- **P5:** persistir e listar mensagens em ordem estável; registrar mensagens do aluno e respostas do tutor com `requestId`, status de processamento e comportamento de retry idempotente.
-- **P6:** implementar o serviço de contexto e o adaptador OpenRouter no backend, integrar o contexto persistido do catálogo, tratar timeouts/erros/respostas inválidas e manter credenciais fora do Git e do navegador.
-- **P7:** fechar testes de integração e segurança entre tentativas, conversas, mensagens, ownership e tutor; revisar contratos OpenAPI e instruções de execução.
+- Criadas as rotas `GET /api/conversations/{conversationId}/messages` e `POST /api/conversations/{conversationId}/messages`.
+- O histórico é ordenado por `createdAt` e `id`; leitura e envio verificam a propriedade da conversa pela tentativa e pelo usuário autenticado.
+- O POST recebe somente `content` e `requestId`, salva a mensagem do aluno como `PROCESSING`, pede a resposta pelo contrato backend `TutorService` e persiste a resposta `TUTOR` antes de marcar a mensagem do aluno como `COMPLETED`.
+- Repetir o mesmo ID e conteúdo retorna a resposta persistida sem chamar o tutor novamente; reutilizar o ID com conteúdo diferente retorna 409. Pedido já em andamento retorna 202. Falha do tutor marca `FAILED` e permite retry com o mesmo requestId.
+- A migration V1 já continha as colunas, constraints e índice necessários; não foi criada migration adicional.
+- Validação local do P5: `mvnw.cmd -q -ntp test`, 13 testes aprovados; OpenAPI parseado como YAML.
+- O tutor é substituído por mock nos testes. Este incremento não chama OpenRouter nem monta o contexto didático completo.
+
+## Próximas etapas: P6 e P7
+
+- **P6:** implementar o `TutorService` de produção e o adaptador OpenRouter; carregar tópico, quiz, questão e alternativas pelo `QuizContextProvider` do João; compor o prompt no backend; tratar timeout, falhas e respostas inválidas; recuperar pedidos presos em `PROCESSING`; manter chave e modelo fora do Git e do navegador.
+- **P7:** fechar testes integrados de tentativas, respostas, conversas, mensagens, ownership, retries e falhas; revisar OpenAPI e instruções de execução.
 
 ## Integrações necessárias para a entrega do grupo
 
@@ -39,3 +48,4 @@ O serviço do Pedro consome `QuizQuestionProvider.listActiveForAttempt(quizId)`,
 - Enzo: autenticação real sobre `AppUser` e estrutura comum de navegação/layout.
 - Thiago: telas Thymeleaf do estudante integradas aos contratos de tentativa, questão, conversa e mensagens.
 - Pedro: mantém o domínio de tentativas, conversas, mensagens e serviço de tutor/OpenRouter.
+- Até João integrar `QuizQuestionProvider` e o P6 fornecer o `TutorService` real, o perfil normal não inicia; os testes substituem esses contratos por mocks.
