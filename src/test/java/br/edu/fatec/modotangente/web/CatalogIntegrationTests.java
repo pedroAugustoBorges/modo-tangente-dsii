@@ -14,14 +14,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.match.MockRestRequestMatchers;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -75,6 +83,7 @@ class CatalogIntegrationTests {
     @Autowired QuizQuestionProvider references;
     @Autowired QuizContextProvider context;
     @Autowired QuizAttemptService attempts;
+    @Autowired QuestionAttemptRepository questionAttempts;
     @Autowired CatalogImporter importer;
     @Autowired TopicRepository topicRows;
 
@@ -167,8 +176,65 @@ class CatalogIntegrationTests {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.statement").value("Primeira"));
         mvc.perform(get("/api/attempts/{a}/questions/{q}", attemptId, first).with(user(admin.getEmail()).roles("ADMIN")))
                 .andExpect(status().isNotFound());
+        Long questionAttemptId = questionAttempts.findByQuizAttemptIdAndQuestionId(attemptId, first)
+                .orElseThrow().getId();
         assertEquals(new QuizTutorContext("Java", null, "Quiz", null, "Leia", "Primeira", "Revisar conceitos",
-                List.of("A", "B")), context.loadForQuestion(first));
+                List.of("A", "B"), "B", true), context.loadForQuestionAttempt(questionAttemptId));
+    }
+
+    @Test
+    void sendsDatabaseBackedQuizContextAndAnswerResultToOpenRouterWithoutSendingTheAnswerKey() {
+        Long questionId = questions.save(quizId, null, published(1,
+                "Explique o ciclo de vida de um componente Spring.")).id();
+        Long attemptId = attempts.start(student.getId(), quizId).id();
+        Long correctOptionId = questions.listOptions(quizId, questionId).stream()
+                .filter(OptionAdminView::correct)
+                .findFirst()
+                .orElseThrow()
+                .id();
+        assertTrue(attempts.answer(student.getId(), attemptId, questionId, correctOptionId).isCorrect());
+        Long questionAttemptId = questionAttempts.findByQuizAttemptIdAndQuestionId(attemptId, questionId)
+                .orElseThrow().getId();
+
+        RestClient.Builder clientBuilder = RestClient.builder().baseUrl("https://openrouter.test/api/v1");
+        MockRestServiceServer server = MockRestServiceServer.bindTo(clientBuilder).build();
+        OpenRouterTutorService tutor = new OpenRouterTutorService(
+                clientBuilder.build(), context, "test-secret-never-log", "test/provider-model", 300, 0, 12_000);
+
+        server.expect(requestTo("https://openrouter.test/api/v1/chat/completions"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(MockRestRequestMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.model").value("test/provider-model"))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.messages[0].content")
+                        .value(org.hamcrest.Matchers.containsString("Tópico: Java")))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.messages[0].content")
+                        .value(org.hamcrest.Matchers.containsString("Quiz: Quiz")))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.messages[0].content")
+                        .value(org.hamcrest.Matchers.containsString(
+                                "Questão: Explique o ciclo de vida de um componente Spring.")))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.messages[0].content")
+                        .value(org.hamcrest.Matchers.containsString("Orientação de estudo: Revisar conceitos")))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.messages[0].content")
+                        .value(org.hamcrest.Matchers.containsString("1. A")))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.messages[0].content")
+                        .value(org.hamcrest.Matchers.containsString("2. B")))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.messages[0].content")
+                        .value(org.hamcrest.Matchers.containsString(
+                                "Resposta selecionada pelo aluno: B\nResultado registrado pelo backend: correta.")))
+                .andExpect(MockRestRequestMatchers.content()
+                        .string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("\"correct\""))))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.messages[1].role").value("user"))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.messages[1].content")
+                        .value("Acertei ao escolher essa resposta? Como isso se relaciona com o Spring Boot?"))
+                .andRespond(withSuccess("""
+                        {"choices":[{"message":{"content":"O Spring Boot configura a aplicação e o Spring gerencia os componentes."}}]}
+                        """, MediaType.APPLICATION_JSON));
+
+        String reply = tutor.generateReply(questionAttemptId, List.of(
+                new TutorService.TutorTurn("STUDENT", "Acertei ao escolher essa resposta? Como isso se relaciona com o Spring Boot?")));
+
+        assertEquals("O Spring Boot configura a aplicação e o Spring gerencia os componentes.", reply);
+        server.verify();
     }
 
     @Test

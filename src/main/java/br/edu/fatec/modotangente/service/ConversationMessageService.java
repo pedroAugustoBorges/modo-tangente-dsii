@@ -32,7 +32,7 @@ public class ConversationMessageService {
 
         String reply;
         try {
-            reply = tutorService.generateReply(claim.questionId(), claim.history());
+            reply = tutorService.generateReply(claim.questionAttemptId(), claim.history());
             if (reply == null || reply.isBlank()) {
                 throw new IllegalStateException("O tutor retornou uma resposta vazia.");
             }

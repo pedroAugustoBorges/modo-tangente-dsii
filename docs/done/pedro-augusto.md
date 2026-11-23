@@ -1,6 +1,6 @@
 # Registro de entregas — Pedro Augusto de Melo Borges
 
-Atualizado em 22/11/2026. Este arquivo registra entregas e validações do Pedro; P6 e P7 estão em commits locais ainda não publicados no GitHub. O plano detalhado permanece fora do repositório.
+Atualizado em 23/11/2026. P1–P7 já estão incorporados em `main`/`origin/main`; esta validação acrescenta mudanças ainda locais e não commitadas. O plano detalhado permanece fora do repositório.
 
 ## Entregue
 
@@ -10,7 +10,7 @@ Atualizado em 22/11/2026. Este arquivo registra entregas e validações do Pedro
 
 ## Decisão de integração do P3
 
-O serviço do Pedro consome `QuizQuestionProvider.listActiveForAttempt(quizId)`, com referências `{questionId, position}`. Neste incremento, os testes fornecem um mock para esse contrato. A implementação real deve ser entregue pelo responsável pelo catálogo, João, sem duplicar o bean. Até essa integração, o teste H2 valida o contrato e o serviço de tentativas, mas o perfil normal da aplicação não inicia: falta o bean de produção exigido pelo `QuizAttemptService`.
+O serviço do Pedro consome `QuizQuestionProvider.listActiveForAttempt(quizId)`, com referências `{questionId, position}`. Nos testes iniciais do P3, um mock substituía esse contrato enquanto o catálogo não estava pronto. João implementou o provedor de produção no catálogo integrado pelo PR #2 (`0fb1aaa`); o bean exigido pelo `QuizAttemptService` já está presente em `main`. A suíte ainda usa mocks nos testes isolados de controllers, e os testes de catálogo cobrem os provedores reais.
 
 ## Verificação do P3
 
@@ -40,8 +40,8 @@ O serviço do Pedro consome `QuizQuestionProvider.listActiveForAttempt(quizId)`,
 ## P6 — TutorService e adaptador OpenRouter
 
 - Implementado `OpenRouterTutorService`, com Chat Completions, configuração externa e chave exclusivamente no backend. Modelo padrão e limites são configuráveis por ambiente.
-- Criado o contrato `QuizContextProvider.loadForQuestion(questionId)` e o DTO `QuizTutorContext`, alinhado à issue mais recente do João. O serviço deriva `questionId` da conversa persistida e passa ao provedor tópico, quiz, questão, instruções e alternativas sem campo de gabarito; a implementação de produção pertence ao catálogo do João.
-- O prompt orienta o tutor a usar tom descontraído inspirado no professor Felipe Cannarrozo Lourenço, sem se passar por ele ou inventar falas. Também orienta a não revelar o gabarito.
+- O contrato `QuizContextProvider.loadForQuestionAttempt(questionAttemptId)` e o DTO `QuizTutorContext` carregam o tópico, quiz, questão, instruções, alternativas e resposta persistida daquela tentativa. O adapter recebe a alternativa selecionada e o resultado calculado pelo backend; os demais marcadores de correção não entram no prompt. O provedor de catálogo foi incorporado pelo merge `0fb1aaa`; sua extensão para resolver o estado da tentativa está nesta atualização local.
+- O prompt usa tom descontraído inspirado no professor Felipe Cannarrozo Lourenço, sem se passar por ele nem inventar falas. Quando o aluno pergunta se acertou, pode confirmar usando o resultado do backend; se errou, deve orientar sem indicar diretamente a alternativa correta.
 - O histórico enviado inclui até oito trocas completas anteriores e a mensagem atual, respeita o limite configurável de caracteres e preserva sempre contexto e pergunta atuais.
 - Cliente HTTP tem timeouts configuráveis. Status de erro, falha de transporte, JSON inválido e conteúdo ausente são convertidos em exceções internas sanitizadas; chave e corpo remoto não são expostos.
 - Adicionada migration Flyway V2 com `processing_started_at`, incluindo preenchimento de registros antigos em `PROCESSING`. Após dois minutos sem atividade (configurável), uma repetição do mesmo `requestId` pode recuperar a mensagem. O lock da conversa serializa essa reivindicação.
@@ -52,18 +52,22 @@ O serviço do Pedro consome `QuizQuestionProvider.listActiveForAttempt(quizId)`,
 - Adicionados testes sem rede para mapeamento de papéis/contexto, limite de histórico, modelo e tokens configurados, resposta válida/vazia, JSON inválido, HTTP 401/429/503, timeout, chave ausente e orçamento de contexto.
 - Teste de controller cobre recuperação de mensagem antiga em `PROCESSING`; os demais cobrem ownership, resposta, idempotência, retries e falha.
 - Atualizados `docs/openapi.yaml`, `docs/escopo.md`, README e este registro.
-- Validação local: `mvnw.cmd -q -ntp test`, **24 testes aprovados**. Testes usam H2 e OpenRouter simulado; nenhuma chamada real foi feita pela suíte e a V2 não foi aplicada ao Supabase do grupo.
+- Suíte normal em 23/11: `mvnw.cmd -q -ntp test` detectou 44 testes; 43 passaram e o teste live opt-in foi ignorado, sem falhas ou erros.
+- Adicionado teste de integração em `CatalogIntegrationTests`: o provedor real lê dados e resultado da resposta do H2; o adaptador envia questão, alternativa selecionada, resultado e pergunta do aluno a um HTTP simulado, sem enviar o gabarito das demais alternativas.
+- Adicionado `OpenRouterConversationLiveTest`, opt-in por `OPENROUTER_LIVE_TEST=true`: simula via MockMvc as rotas de iniciar tentativa, responder à questão, criar conversa e enviar mensagem. Foi executado com H2 e credencial carregada do `.env`; a chamada real ao OpenRouter concluiu e retornou resposta não vazia.
+- Na execução normal da suíte, o teste live fica ignorado por padrão; o teste de integração local não usa rede. A execução live não acessou o Supabase e não aplicou migrations no banco compartilhado.
 
 ## Integração pendente do grupo
 
-- João ainda precisa implementar os beans de produção `QuizQuestionProvider` e `QuizContextProvider`; até lá, o início real de tentativas e a resolução do contexto dependem de mocks nos testes.
-- Enzo integra autenticação real sobre `AppUser`; Thiago conecta as telas ao contrato de mensagens.
-- A configuração OpenRouter passou por uma prova separada de conectividade; isso não substitui a integração com catálogo real.
+- João entregou o catálogo e os beans de produção `QuizQuestionProvider` e `QuizContextProvider`; o teste de integração atualizado cobre a ligação do contexto persistido ao adaptador OpenRouter.
+- Enzo entregou autenticação e layout comum; a interface administrativa ainda precisa ser integrada às rotas de catálogo.
+- Thiago entregou templates iniciais do estudante; ainda faltam controllers/model Thymeleaf e integração das telas com catálogo, tentativas, respostas e chat.
+- Pedro completou os sete incrementos do plano. A chamada real ao OpenRouter foi validada pelo fluxo HTTP sem interface, usando H2; o fluxo visual e o Supabase compartilhado ainda não foram validados de ponta a ponta.
 
 ## Integrações necessárias para a entrega do grupo
 
-- João: bean de produção `QuizQuestionProvider` e catálogo; depois, `QuizContextProvider` usado pelo tutor.
-- Enzo: autenticação real sobre `AppUser` e estrutura comum de navegação/layout.
-- Thiago: telas Thymeleaf do estudante integradas aos contratos de tentativa, questão, conversa e mensagens.
-- Pedro: mantém o domínio de tentativas, conversas, mensagens e serviço de tutor/OpenRouter.
-- Até João integrar `QuizQuestionProvider` e `QuizContextProvider`, o perfil normal não inicia o fluxo completo; os testes substituem esses contratos por mocks.
+- João: catálogo e provedores de produção entregues; falta a integração das telas administrativas e de estudo com a API.
+- Enzo: autenticação real sobre `AppUser` e estrutura comum de navegação/layout entregues; a integração das páginas administrativas permanece.
+- Thiago: estrutura inicial Thymeleaf entregue; falta integrar as telas do estudante às rotas de tentativa, questão, conversa e mensagens.
+- Pedro: P1–P7 entregues; contexto por tentativa, resultado de correção e chamada OpenRouter validados em teste H2/MockMvc sem telas.
+- O teste live comprovou uma resposta real da API externa; não comprova integração de interface nem execução sobre o Supabase compartilhado.

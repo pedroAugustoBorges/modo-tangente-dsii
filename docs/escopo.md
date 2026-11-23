@@ -10,7 +10,7 @@ Apoiar alunos de Desenvolvimento de Servidores II em Java, orientação a objeto
 2. Escolhe um tópico e um quiz ativo.
 3. Inicia uma tentativa e responde questões de escolha única.
 4. Abre um chat associado à questão daquela tentativa.
-5. O servidor monta o contexto com tópico, instruções do quiz, enunciado, alternativas e mensagens anteriores; o navegador não envia um contexto arbitrário.
+5. O servidor monta o contexto com tópico, instruções do quiz, enunciado, alternativas, resposta escolhida e resultado calculado para a questão naquela tentativa, além das mensagens anteriores; o navegador não envia esse contexto.
 6. O tutor responde via OpenRouter e a aplicação persiste mensagens e progresso.
 
 O estilo será descontraído e inspirado no modo de explicar do professor Felipe Cannarrozo Lourenço. O produto não se apresenta como o professor nem inventa citações ou falas atribuídas a ele. Exemplos concretos de aula só serão incorporados com autorização.
@@ -19,7 +19,7 @@ O estilo será descontraído e inspirado no modo de explicar do professor Felipe
 
 O baseline inicial mapeia nove entidades: `AppUser`, `Topic`, `Quiz`, `QuizQuestion`, `QuizQuestionOption`, `QuizAttempt`, `QuestionAttempt`, `Conversation` e `Message`. As tabelas pertencem ao schema PostgreSQL `public` e são criadas por migrations Flyway. Uma tentativa tem progresso individual, cada questão respondida pertence ao mesmo quiz da tentativa e cada tentativa de questão possui no máximo uma conversa. A primeira API inicia, lista e consulta tentativas do usuário autenticado; o usuário não é recebido no request. A conta é recusada se estiver inativa. O uso com contas reais depende de Enzo ligar o principal autenticado ao `AppUser` persistido, com `Authentication.getName()` igual ao e-mail da conta.
 
-As regras de acesso serão aplicadas pelos serviços com a identidade da sessão. O usuário não pode consultar tentativa ou conversa de outro aluno. O gabarito permanece no backend e a explicação de uma resposta correta depende de política a confirmar pelo grupo.
+As regras de acesso serão aplicadas pelos serviços com a identidade da sessão. O usuário não pode consultar tentativa ou conversa de outro aluno. O gabarito permanece no backend; para a questão da conversa, o tutor recebe apenas a alternativa escolhida pelo aluno e o resultado calculado pelo backend. Pode confirmar esse resultado e adaptar a explicação, sem receber a marcação correta das demais alternativas.
 
 ## Arquitetura prevista
 
@@ -29,7 +29,7 @@ PostgreSQL será hospedado no Supabase. O schema é aplicado por Flyway; a conex
 
 ## Entrega inicial e próximos módulos
 
-O baseline inclui nove entidades e a migration V1. A V2 acrescenta o início do processamento de cada mensagem para permitir retry de solicitações abandonadas. A API já cobre tentativas, progresso e chat; o adapter OpenRouter aplica contexto fornecido pelo contrato `QuizContextProvider`, limita o histórico às últimas oito trocas completas e não envia gabarito. A conexão ao catálogo real depende do provedor de contexto de João. Integração de login, catálogo/CRUD, telas completas e publicação seguem pendentes.
+O baseline inclui nove entidades e a migration V1. A V2 acrescenta o início do processamento de cada mensagem para permitir retry de solicitações abandonadas. A API cobre tentativas, progresso e chat; o adapter OpenRouter monta contexto a partir do `QuestionAttempt` ligado à conversa, inclui o resultado da resposta, limita o histórico às últimas oito trocas completas e não envia o gabarito das demais alternativas. Os provedores reais do catálogo já estão integrados. O fluxo HTTP com resposta real do OpenRouter foi validado em teste isolado com H2; integração das telas e validação no Supabase compartilhado permanecem pendentes.
 
 ## Critérios de aceite da jornada
 

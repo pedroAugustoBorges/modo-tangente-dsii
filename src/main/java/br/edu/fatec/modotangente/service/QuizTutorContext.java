@@ -11,9 +11,14 @@ public record QuizTutorContext(
         String quizInstructions,
         String questionStatement,
         String studyGuidance,
-        List<String> options) {
+        List<String> options,
+        String selectedOptionText,
+        Boolean answerCorrect) {
 
     public QuizTutorContext {
         options = options == null ? List.of() : List.copyOf(options);
+        if ((selectedOptionText == null) != (answerCorrect == null)) {
+            throw new IllegalArgumentException("A resposta e seu resultado devem estar ambos presentes ou ausentes.");
+        }
     }
 }

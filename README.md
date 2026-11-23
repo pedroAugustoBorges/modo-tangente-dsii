@@ -32,11 +32,20 @@ O catálogo fornece as questões publicadas para novas tentativas e o contexto p
 
 Administradores criam e atualizam tópicos e quizzes em `/api/admin/topics` e `/api/admin/quizzes`. Em `/api/admin/quizzes/{quizId}/questions`, o corpo da questão inclui a lista completa de alternativas. Use POST para criar e PUT no ID para substituir enunciado, alternativas e ordem em uma transação. Um rascunho aceita uma lista vazia. Publicar exige pelo menos duas alternativas e uma correta. DELETE desativa o recurso. Quando há tentativa associada, PUT devolve o ID da nova versão e a anterior continua disponível na tentativa original.
 
-A leitura do aluno parte de `GET /api/topics`, passa por `GET /api/topics/{topicId}/quizzes` e termina em `GET /api/quizzes/{quizId}/questions`. O histórico usa `GET /api/attempts/{attemptId}/questions/{questionId}` com a sessão do dono da tentativa. O gabarito é usado na correção do servidor. Apenas a administração autenticada tem acesso aos marcadores de correção ao editar alternativas.
+A leitura do aluno parte de `GET /api/topics`, passa por `GET /api/topics/{topicId}/quizzes` e termina em `GET /api/quizzes/{quizId}/questions`. O histórico usa `GET /api/attempts/{attemptId}/questions/{questionId}` com a sessão do dono da tentativa. O gabarito é usado na correção do servidor. No chat, o tutor recebe a alternativa escolhida e o resultado daquela tentativa, sem receber os marcadores de correção das demais opções. Apenas a administração autenticada tem acesso a esses marcadores ao editar alternativas.
 
 Para carregar o exemplo de injeção de dependência já presente nos testes do grupo, defina `CATALOG_IMPORT_RESOURCE=classpath:catalog/spring-ioc.json` ao iniciar a aplicação. Para material externo, use `file:/caminho/catalogo.json` com o mesmo formato e uma origem versionada no campo `source`. A importação é transacional e registra a origem e o SHA-256 dos bytes do arquivo. Reexecutar o mesmo lote preserva os IDs. Um arquivo diferente com a mesma origem é recusado.
 
 ## Execução local
+
+O teste live OpenRouter não roda na suíte normal. Para simular o fluxo HTTP sem telas e fazer uma chamada real ao provedor, defina `OPENROUTER_API_KEY` no ambiente e execute no PowerShell:
+
+```powershell
+$env:OPENROUTER_LIVE_TEST = "true"
+.\mvnw.cmd '-Dtest=OpenRouterConversationLiveTest' test
+```
+
+Esse cenário usa H2 e faz uma única requisição real ao OpenRouter.
 
 Requer Java 17. Execute os testes com `./mvnw test` em Linux ou macOS, ou `.\mvnw.cmd test` no PowerShell. A suíte usa H2 em memória e simula o catálogo e o OpenRouter nos cenários que dependem deles.
 

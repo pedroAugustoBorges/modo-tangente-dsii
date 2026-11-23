@@ -488,7 +488,7 @@ paths:
     post:
       operationId: sendConversationMessage
       summary: Persiste uma mensagem do aluno e solicita uma resposta do tutor
-      description: O backend valida a propriedade da conversa, recebe somente conteúdo e requestId, carrega contexto didático pelo QuizContextProvider e chama o adaptador OpenRouter. A chave permanece no servidor. Repetir o mesmo requestId e conteúdo não duplica mensagens; reutilizar o ID com outro conteúdo retorna conflito.
+      description: O backend valida a propriedade da conversa, recebe somente conteúdo e requestId e deriva o contexto do QuestionAttempt vinculado à conversa. Se a questão foi respondida, o tutor recebe a alternativa escolhida e o resultado calculado pelo servidor, sem os marcadores de correção das demais opções. O adaptador chama o OpenRouter e mantém a chave no servidor. Repetir o mesmo requestId e conteúdo não duplica mensagens; reutilizar o ID com outro conteúdo retorna conflito.
       parameters:
         - name: conversationId
           in: path

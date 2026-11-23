@@ -9,7 +9,7 @@ Atualizado em 23/11/2026. A branch `codex/catalogo-didatico` reúne sete increme
 - **Questões** — gestão de enunciado, posição, orientação e pontuação. Editar uma questão usada em tentativa cria uma versão. A migration V3 permite que a versão histórica preserve sua posição. Commit `9b78578`.
 - **Alternativas e publicação** — questão e alternativas são salvas na mesma transação. Publicar exige posições distintas, pelo menos duas alternativas e exatamente uma correta. Commit `da4f8b4`.
 - **Catálogo do aluno e tentativas** — leitura do conteúdo ativo, alternativas sem marcador de correção e consulta da versão histórica pelo dono da tentativa. O contrato `QuizQuestionProvider.listActiveForAttempt(quizId)` fornece as referências `{questionId, position}` em ordem. Commit `5554f8d`.
-- **Contexto do tutor** — `QuizContextProvider.loadForQuestion(questionId)` deriva do banco o tópico, o quiz, o enunciado, a orientação e os textos das alternativas em ordem. Commit `78bb6be`.
+- **Contexto do tutor** — `DatabaseQuizContextProvider` deriva do banco o tópico, o quiz, o enunciado, a orientação e os textos das alternativas em ordem. Commit `78bb6be`. Nesta atualização local, o contrato foi ampliado para `loadForQuestionAttempt(questionAttemptId)`, incluindo, quando existir, a alternativa escolhida e o resultado da correção daquela tentativa.
 - **Carga inicial, testes e documentação** — importador transacional com registro de origem e SHA-256 na migration V4. Reexecutar o mesmo lote preserva os IDs. Inclui o exemplo de injeção de dependência, os testes de integração e os contratos da API. Commit `43ef0d5`. [OpenAPI](../openapi.yaml)
 
 ## Verificação
@@ -21,5 +21,5 @@ Atualizado em 23/11/2026. A branch `codex/catalogo-didatico` reúne sete increme
 ## Pendências para a entrega do grupo
 
 - Integrar as telas de estudo e administração às rotas do catálogo.
-- Registrar a confirmação de João e Pedro sobre a assinatura do provedor já exercitada pelo serviço de tentativas.
+- A assinatura `QuizQuestionProvider.listActiveForAttempt(quizId)` está integrada ao serviço de tentativas no `main`; o provedor de produção entrega as referências ordenadas esperadas e a suíte cobre essa ligação.
 - Importar as demais questões quando o grupo disponibilizar o material com sua origem.

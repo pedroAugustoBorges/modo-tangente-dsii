@@ -33,7 +33,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 class OpenRouterTutorServiceTests {
 
     private static final String API_KEY = "test-secret-never-log";
-    private static final Long QUESTION_ID = 42L;
+    private static final Long QUESTION_ATTEMPT_ID = 42L;
 
     private QuizContextProvider contextProvider;
     private MockRestServiceServer server;
@@ -42,7 +42,7 @@ class OpenRouterTutorServiceTests {
     @BeforeEach
     void setUp() {
         contextProvider = mock(QuizContextProvider.class);
-        when(contextProvider.loadForQuestion(QUESTION_ID)).thenReturn(testContext());
+        when(contextProvider.loadForQuestionAttempt(QUESTION_ATTEMPT_ID)).thenReturn(testContext());
 
         RestClient.Builder builder = RestClient.builder().baseUrl("https://openrouter.test/api/v1");
         server = MockRestServiceServer.bindTo(builder).build();
@@ -67,6 +67,10 @@ class OpenRouterTutorServiceTests {
                 .andExpect(jsonPath("$.messages[0].content").value(org.hamcrest.Matchers.containsString("Spring Boot")))
                 .andExpect(jsonPath("$.messages[0].content").value(org.hamcrest.Matchers.containsString("Alternativas (sem indicação de correção)")))
                 .andExpect(jsonPath("$.messages[0].content").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("1. Alternativa correta"))))
+                .andExpect(jsonPath("$.messages[0].content").value(org.hamcrest.Matchers.containsString(
+                        "Resposta selecionada pelo aluno: Receber dependências do container")))
+                .andExpect(jsonPath("$.messages[0].content").value(org.hamcrest.Matchers.containsString(
+                        "Resultado registrado pelo backend: correta.")))
                 .andExpect(jsonPath("$.messages[1].role").value("user"))
                 .andExpect(jsonPath("$.messages[2].role").value("assistant"))
                 .andExpect(jsonPath("$.messages[3].role").value("user"))
@@ -75,13 +79,13 @@ class OpenRouterTutorServiceTests {
                         {"choices":[{"message":{"content":"É o Spring entregando a dependência pronta."}}]}
                         """, MediaType.APPLICATION_JSON));
 
-        String reply = service.generateReply(QUESTION_ID, List.of(
+        String reply = service.generateReply(QUESTION_ATTEMPT_ID, List.of(
                 new TutorService.TutorTurn("STUDENT", "O que é um bean?"),
                 new TutorService.TutorTurn("TUTOR", "Um objeto gerenciado pelo Spring."),
                 new TutorService.TutorTurn("STUDENT", "Explique injeção de dependência.")));
 
         assertEquals("É o Spring entregando a dependência pronta.", reply);
-        verify(contextProvider).loadForQuestion(QUESTION_ID);
+        verify(contextProvider).loadForQuestionAttempt(QUESTION_ATTEMPT_ID);
     }
 
     @Test
@@ -102,7 +106,7 @@ class OpenRouterTutorServiceTests {
                         {"choices":[{"message":{"content":"Resposta"}}]}
                         """, MediaType.APPLICATION_JSON));
 
-        service.generateReply(QUESTION_ID, history);
+        service.generateReply(QUESTION_ATTEMPT_ID, history);
     }
 
     @Test
@@ -114,7 +118,7 @@ class OpenRouterTutorServiceTests {
 
         OpenRouterTutorService.TutorProviderException exception = assertThrows(
                 OpenRouterTutorService.TutorProviderException.class,
-                () -> service.generateReply(QUESTION_ID, currentQuestion()));
+                () -> service.generateReply(QUESTION_ATTEMPT_ID, currentQuestion()));
 
         assertTrue(exception.getMessage().contains("resposta vazia"));
         assertFalse(exception.getMessage().contains(API_KEY));
@@ -129,7 +133,7 @@ class OpenRouterTutorServiceTests {
 
         OpenRouterTutorService.TutorProviderException exception = assertThrows(
                 OpenRouterTutorService.TutorProviderException.class,
-                () -> service.generateReply(QUESTION_ID, currentQuestion()));
+                () -> service.generateReply(QUESTION_ATTEMPT_ID, currentQuestion()));
 
         assertFalse(exception.getMessage().contains(API_KEY));
         assertFalse(exception.getMessage().contains("provider error"));
@@ -142,7 +146,7 @@ class OpenRouterTutorServiceTests {
 
         OpenRouterTutorService.TutorProviderException exception = assertThrows(
                 OpenRouterTutorService.TutorProviderException.class,
-                () -> service.generateReply(QUESTION_ID, currentQuestion()));
+                () -> service.generateReply(QUESTION_ATTEMPT_ID, currentQuestion()));
 
         assertTrue(exception.getMessage().contains("resposta inválida"));
         assertFalse(exception.getMessage().contains("not-json"));
@@ -155,7 +159,7 @@ class OpenRouterTutorServiceTests {
 
         OpenRouterTutorService.TutorProviderException exception = assertThrows(
                 OpenRouterTutorService.TutorProviderException.class,
-                () -> service.generateReply(QUESTION_ID, currentQuestion()));
+                () -> service.generateReply(QUESTION_ATTEMPT_ID, currentQuestion()));
 
         assertFalse(exception.getMessage().contains(API_KEY));
         assertFalse(exception.getMessage().contains("timeout"));
@@ -168,7 +172,7 @@ class OpenRouterTutorServiceTests {
                 contextProvider, "", "test/provider-model", 600, 8, 12_000);
         OpenRouterTutorService.TutorProviderException missingKey = assertThrows(
                 OpenRouterTutorService.TutorProviderException.class,
-                () -> withoutKey.generateReply(QUESTION_ID, currentQuestion()));
+                () -> withoutKey.generateReply(QUESTION_ATTEMPT_ID, currentQuestion()));
         assertTrue(missingKey.getMessage().contains("não está configurada"));
     }
 
@@ -180,7 +184,7 @@ class OpenRouterTutorServiceTests {
 
         OpenRouterTutorService.TutorProviderException exception = assertThrows(
                 OpenRouterTutorService.TutorProviderException.class,
-                () -> smallBudget.generateReply(QUESTION_ID, currentQuestion()));
+                () -> smallBudget.generateReply(QUESTION_ATTEMPT_ID, currentQuestion()));
 
         assertTrue(exception.getMessage().contains("excedem o limite"));
     }
@@ -193,6 +197,7 @@ class OpenRouterTutorServiceTests {
         return new QuizTutorContext(
                 "Spring Boot", "Framework para aplicações Java", "Quiz de Spring", "Quiz introdutório",
                 "Considere o contexto da aplicação", "O que é injeção de dependência?", "Revise IoC e beans",
-                List.of("Instanciar tudo manualmente", "Receber dependências do container"));
+                List.of("Instanciar tudo manualmente", "Receber dependências do container"),
+                "Receber dependências do container", true);
     }
 }

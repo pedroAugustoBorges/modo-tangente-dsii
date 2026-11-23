@@ -309,6 +309,8 @@ class QuizAttemptControllerTests {
     void sendsMessagesPersistsRepliesAndReusesTheSameRequestId() throws Exception {
         Long attemptId = startAttempt();
         Long conversationId = startConversation(attemptId, firstQuestionId);
+        Long questionAttemptId = questionAttemptRepository.findByQuizAttemptIdAndQuestionId(attemptId, firstQuestionId)
+                .orElseThrow().getId();
         UUID requestId = UUID.randomUUID();
         String path = "/api/conversations/{conversationId}/messages";
         String requestBody = objectMapper.writeValueAsString(new SendMessageRequest("O que é Spring Boot?", requestId));
@@ -342,7 +344,7 @@ class QuizAttemptControllerTests {
                                 new SendMessageRequest("Conteúdo diferente", requestId))))
                 .andExpect(status().isConflict());
 
-        verify(tutorService, times(1)).generateReply(eq(firstQuestionId), anyList());
+        verify(tutorService, times(1)).generateReply(eq(questionAttemptId), anyList());
         mockMvc.perform(get(path, conversationId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -385,6 +387,8 @@ class QuizAttemptControllerTests {
     void reportsAnExistingProcessingRequestWithoutCallingTheTutorAgain() throws Exception {
         Long attemptId = startAttempt();
         Long conversationId = startConversation(attemptId, firstQuestionId);
+        Long questionAttemptId = questionAttemptRepository.findByQuizAttemptIdAndQuestionId(attemptId, firstQuestionId)
+                .orElseThrow().getId();
         UUID requestId = UUID.randomUUID();
         Message pending = new Message();
         pending.setConversationId(conversationId);
@@ -413,6 +417,8 @@ class QuizAttemptControllerTests {
     void recoversAStaleProcessingRequestAndClaimsOnlyOneRetry() throws Exception {
         Long attemptId = startAttempt();
         Long conversationId = startConversation(attemptId, firstQuestionId);
+        Long questionAttemptId = questionAttemptRepository.findByQuizAttemptIdAndQuestionId(attemptId, firstQuestionId)
+                .orElseThrow().getId();
         UUID requestId = UUID.randomUUID();
         Message stale = new Message();
         stale.setConversationId(conversationId);
@@ -434,7 +440,7 @@ class QuizAttemptControllerTests {
         org.junit.jupiter.api.Assertions.assertEquals(
                 "COMPLETED", messageRepository.findByConversationIdAndRequestId(conversationId, requestId)
                         .orElseThrow().getLlmStatus());
-        verify(tutorService, times(1)).generateReply(eq(firstQuestionId), anyList());
+        verify(tutorService, times(1)).generateReply(eq(questionAttemptId), anyList());
     }
 
     @Test

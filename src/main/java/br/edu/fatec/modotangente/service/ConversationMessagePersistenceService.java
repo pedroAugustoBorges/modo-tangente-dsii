@@ -52,11 +52,10 @@ public class ConversationMessagePersistenceService {
 
     @Transactional
     public SubmissionClaim begin(Long userId, Long conversationId, String content, UUID requestId) {
-        requireOwnedConversation(userId, conversationId);
+        Conversation conversation = requireOwnedConversation(userId, conversationId);
         conversationRepository.findForUpdateById(conversationId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversa não encontrada."));
-        Long questionId = conversationRepository.findQuestionIdByConversationId(conversationId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Questão da conversa não encontrada."));
+        Long questionAttemptId = conversation.getQuestionAttemptId();
 
         Message studentMessage = messageRepository.findByConversationIdAndRequestId(conversationId, requestId)
                 .orElse(null);
@@ -70,14 +69,14 @@ public class ConversationMessagePersistenceService {
         if (studentMessage != null && COMPLETED.equals(studentMessage.getLlmStatus())) {
             Message tutorMessage = messageRepository.findByReplyToMessageId(studentMessage.getId())
                     .orElseThrow(() -> new IllegalStateException("Resposta concluída sem mensagem do tutor."));
-            return SubmissionClaim.completed(studentMessage, tutorMessage, questionId);
+            return SubmissionClaim.completed(studentMessage, tutorMessage, questionAttemptId);
         }
 
         if (studentMessage != null && PROCESSING.equals(studentMessage.getLlmStatus())) {
             Instant startedAt = studentMessage.getProcessingStartedAt();
             boolean isFresh = startedAt != null && startedAt.isAfter(Instant.now().minus(processingTimeout));
             if (isFresh) {
-                return SubmissionClaim.processing(studentMessage, questionId);
+                return SubmissionClaim.processing(studentMessage, questionAttemptId);
             }
             // A crashed process may leave a request stuck in PROCESSING. The conversation lock
             // ensures only one retry can claim it after the configured timeout.
@@ -100,7 +99,7 @@ public class ConversationMessagePersistenceService {
                 .map(message -> new TutorService.TutorTurn(message.getSenderRole(), message.getContent()))
                 .toList();
 
-        return SubmissionClaim.claimed(studentMessage, questionId, history, created);
+        return SubmissionClaim.claimed(studentMessage, questionAttemptId, history, created);
     }
 
     @Transactional
@@ -143,26 +142,26 @@ public class ConversationMessagePersistenceService {
     public record SubmissionClaim(
             ClaimState state,
             boolean created,
-            Long questionId,
+            Long questionAttemptId,
             Long studentMessageId,
             MessageExchangeResponse response,
             List<TutorService.TutorTurn> history) {
 
-        static SubmissionClaim completed(Message studentMessage, Message tutorMessage, Long questionId) {
+        static SubmissionClaim completed(Message studentMessage, Message tutorMessage, Long questionAttemptId) {
             return new SubmissionClaim(
                     ClaimState.COMPLETED,
                     false,
-                    questionId,
+                    questionAttemptId,
                     studentMessage.getId(),
                     new MessageExchangeResponse(MessageView.from(studentMessage), MessageView.from(tutorMessage)),
                     List.of());
         }
 
-        static SubmissionClaim processing(Message studentMessage, Long questionId) {
+        static SubmissionClaim processing(Message studentMessage, Long questionAttemptId) {
             return new SubmissionClaim(
                     ClaimState.PROCESSING,
                     false,
-                    questionId,
+                    questionAttemptId,
                     studentMessage.getId(),
                     new MessageExchangeResponse(MessageView.from(studentMessage), null),
                     List.of());
@@ -170,13 +169,13 @@ public class ConversationMessagePersistenceService {
 
         static SubmissionClaim claimed(
                 Message studentMessage,
-                Long questionId,
+                Long questionAttemptId,
                 List<TutorService.TutorTurn> history,
                 boolean created) {
             return new SubmissionClaim(
                     ClaimState.CLAIMED,
                     created,
-                    questionId,
+                    questionAttemptId,
                     studentMessage.getId(),
                     new MessageExchangeResponse(MessageView.from(studentMessage), null),
                     history);
