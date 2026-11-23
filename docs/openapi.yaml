@@ -192,7 +192,7 @@ paths:
     post:
       operationId: sendConversationMessage
       summary: Persiste uma mensagem do aluno e solicita uma resposta do tutor
-      description: O backend valida a propriedade da conversa, recebe somente conteúdo e requestId, e obtém a resposta por um serviço de tutor substituível. Repetir o mesmo requestId e conteúdo não duplica mensagens; reutilizar o ID com outro conteúdo retorna conflito.
+      description: O backend valida a propriedade da conversa, recebe somente conteúdo e requestId, carrega contexto didático pelo QuizContextProvider e chama o adaptador OpenRouter. A chave permanece no servidor. Repetir o mesmo requestId e conteúdo não duplica mensagens; reutilizar o ID com outro conteúdo retorna conflito.
       parameters:
         - name: conversationId
           in: path
@@ -222,7 +222,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MessageExchangeResponse'
         '202':
-          description: Requisição com esse requestId ainda está em processamento
+          description: Requisição com esse requestId ainda está dentro do prazo de processamento; após o timeout configurado, uma repetição recupera a solicitação
           content:
             application/json:
               schema:

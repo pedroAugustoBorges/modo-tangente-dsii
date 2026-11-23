@@ -23,13 +23,13 @@ As regras de acesso serão aplicadas pelos serviços com a identidade da sessão
 
 ## Arquitetura prevista
 
-Aplicação monolítica Spring Boot com páginas Thymeleaf e API REST. Controllers recebem requests e DTOs; Services aplicam autorização, validação, montagem do contexto e transações; repositories Spring Data JPA persistem o domínio. OpenRouter é acessado por adapter no backend. A chamada externa ocorre fora de uma transação longa; mensagens idempotentes guardam estado de processamento e resultado.
+Aplicação monolítica Spring Boot com páginas Thymeleaf e API REST. Controllers recebem requests e DTOs; Services aplicam autorização, validação, montagem do contexto e transações; repositories Spring Data JPA persistem o domínio. OpenRouter é acessado por adapter no backend. A chamada externa ocorre fora de uma transação longa; mensagens idempotentes guardam estado e instante de início do processamento, permitindo recuperar tentativas que ficaram presas.
 
 PostgreSQL será hospedado no Supabase. O schema é aplicado por Flyway; a conexão depende de variáveis locais/de ambiente. O acesso ao Supabase e as credenciais OpenRouter serão fornecidos depois. Nenhum comando de migration será executado no banco do grupo sem acesso e revisão.
 
 ## Entrega inicial e próximos módulos
 
-O baseline inclui estrutura Maven/Spring Boot, nove entidades e a migration única V1. O incremento seguinte já adiciona API autenticada para iniciar, listar e consultar tentativas, filtrando pelo proprietário. Faltam integração do login com AppUser, catálogo/CRUD, tentativas por questão e correção, chat contextualizado, adapter OpenRouter, telas, OpenAPI e publicação.
+O baseline inclui nove entidades e a migration V1. A V2 acrescenta o início do processamento de cada mensagem para permitir retry de solicitações abandonadas. A API já cobre tentativas, progresso e chat; o adapter OpenRouter aplica contexto fornecido pelo contrato `QuizContextProvider`, limita o histórico às últimas oito trocas completas e não envia gabarito. A conexão ao catálogo real depende do provedor de contexto de João. Integração de login, catálogo/CRUD, telas completas e publicação seguem pendentes.
 
 ## Critérios de aceite da jornada
 
