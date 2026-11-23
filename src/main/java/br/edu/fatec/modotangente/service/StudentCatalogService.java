@@ -13,7 +13,7 @@ import static org.springframework.http.HttpStatus.*;
 
 @Service
 @Transactional(readOnly = true)
-public class StudentCatalogService implements QuizQuestionProvider {
+public class StudentCatalogService {
     private final TopicRepository topics;
     private final QuizRepository quizzes;
     private final QuizQuestionRepository questions;
@@ -57,13 +57,12 @@ public class StudentCatalogService implements QuizQuestionProvider {
         return StudentQuestion.from(entry.getQuestion(), options.findByQuestionIdOrderByPositionAsc(questionId));
     }
 
-    @Override
     @Transactional
-    public List<QuestionReference> listActiveForAttempt(Long quizId) {
+    public List<QuizQuestionProvider.QuestionReference> listActiveForAttempt(Long quizId) {
         // Hold the same lock as the editor until the enclosing attempt transaction commits its references.
         quizzes.lockForCatalog(quizId).orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
         List<QuizQuestion> published = publishedQuestions(quizId);
         if (published.isEmpty()) throw new ResponseStatusException(CONFLICT, "Quiz sem questões publicadas.");
-        return published.stream().map(q -> new QuestionReference(q.getId(), q.getPosition())).toList();
+        return published.stream().map(q -> new QuizQuestionProvider.QuestionReference(q.getId(), q.getPosition())).toList();
     }
 }

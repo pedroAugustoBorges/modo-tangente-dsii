@@ -4,13 +4,17 @@ import br.edu.fatec.modotangente.domain.Quiz;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
+import java.util.List;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 
 public interface QuizRepository extends JpaRepository<Quiz, Long> {
-    java.util.List<Quiz> findByTopicIdAndActiveTrueOrderByDisplayOrderAscIdAsc(Long topicId);
+    List<Quiz> findByTopicIdAndActiveTrueOrderByDisplayOrderAscIdAsc(Long topicId);
     Optional<Quiz> findByIdAndActiveTrueAndTopicActiveTrue(Long id);
-    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
-    @org.springframework.data.jpa.repository.Query("select q from Quiz q where q.id = :id")
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select q from Quiz q where q.id = :id")
     Optional<Quiz> lockForCatalog(Long id);
-    java.util.List<Quiz> findAllByOrderByDisplayOrderAscIdAsc();
+    List<Quiz> findAllByOrderByDisplayOrderAscIdAsc();
     Optional<Quiz> findByIdAndActiveTrue(Long id);
 }
