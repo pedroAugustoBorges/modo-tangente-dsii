@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface QuestionAttemptRepository extends JpaRepository<QuestionAttempt, Long> {
+    Optional<QuestionAttempt> findByQuizAttemptIdAndQuestionIdAndQuizAttemptUserId(Long attemptId, Long questionId, Long userId);
     boolean existsByQuestionId(Long questionId);
 
     @Query("""

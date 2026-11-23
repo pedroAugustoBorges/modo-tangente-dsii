@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface QuizQuestionOptionRepository extends JpaRepository<QuizQuestionOption, Long> {
+    java.util.List<QuizQuestionOption> findByQuestionIdInOrderByPositionAsc(java.util.List<Long> questionIds);
     java.util.List<QuizQuestionOption> findByQuestionIdOrderByPositionAsc(Long questionId);
     Optional<QuizQuestionOption> findByIdAndQuestionId(Long id, Long questionId);
 }
