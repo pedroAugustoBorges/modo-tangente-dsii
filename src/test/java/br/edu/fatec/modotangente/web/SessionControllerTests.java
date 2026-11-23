@@ -12,18 +12,25 @@ import org.springframework.boot.test.context.TestComponent;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Controller;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
@@ -40,7 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@Import(SessionControllerTests.AdminRoutes.class)
+@Import({SessionControllerTests.AdminRoutes.class, SessionControllerTests.StudyPages.class})
 class SessionControllerTests {
 
     private static final String PASSWORD = "senha-de-teste";
@@ -75,6 +82,7 @@ class SessionControllerTests {
 
         mockMvc.perform(get("/").session(session))
                 .andExpect(status().isOk())
+                .andExpect(content().string(containsString("aria-label=\"Navegação principal\"")))
                 .andExpect(content().string(containsString("Conta de Teste")));
 
         mockMvc.perform(get("/api/me").session(session))
@@ -146,6 +154,51 @@ class SessionControllerTests {
         assertThat(session.isInvalid()).isTrue();
     }
 
+    @Test
+    void guestsCanLoadTheSharedStylesAndSeeOnlyTheLoginForm() throws Exception {
+        mockMvc.perform(get("/login"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("href=\"/css/app.css\"")))
+                .andExpect(content().string(not(containsString("aria-label=\"Navegação principal\""))));
+
+        mockMvc.perform(get("/css/app.css"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("text/css"));
+    }
+
+    @Test
+    void rendersTheStudyCatalogWithTheAuthenticatedNavigation() throws Exception {
+        MockHttpSession session = loginSession(createUser("catalogo@example.com", "STUDENT", true));
+
+        mockMvc.perform(get("/__test/estudo/catalogo").session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("aria-label=\"Navegação principal\"")))
+                .andExpect(content().string(containsString("action=\"/logout\"")))
+                .andExpect(content().string(containsString("name=\"_csrf\"")))
+                .andExpect(content().string(containsString("Tópicos de estudo")))
+                .andExpect(content().string(containsString("Spring Boot")));
+    }
+
+    @Test
+    void preservesTheOpenAndAnsweredQuestionStatesInTheSharedLayout() throws Exception {
+        MockHttpSession session = loginSession(createUser("questao@example.com", "STUDENT", true));
+
+        mockMvc.perform(get("/__test/estudo/questao").session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("aria-label=\"Navegação principal\"")))
+                .andExpect(content().string(containsString("Questão 2 de 4")))
+                .andExpect(content().string(containsString("O que é injeção de dependências?")))
+                .andExpect(content().string(not(containsString("disabled=\"disabled\""))));
+
+        String answeredPage = mockMvc.perform(get("/__test/estudo/questao").param("respondida", "true").session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Questão respondida.")))
+                .andExpect(content().string(containsString("disabled=\"disabled\"")))
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(answeredPage).containsPattern("value=\"22\"\\s+checked=\"checked\"");
+    }
+
     private AppUser createUser(String email, String role, boolean active) {
         AppUser user = new AppUser();
         user.setFullName("Conta de Teste");
@@ -173,6 +226,31 @@ class SessionControllerTests {
         @GetMapping({"/admin", "/api/admin/topics"})
         String adminEndpoint() {
             return "OK";
+        }
+    }
+
+    @TestComponent
+    @Controller
+    static class StudyPages {
+        @GetMapping("/__test/estudo/catalogo")
+        String catalog(Model model) {
+            model.addAttribute("titulo", "Tópicos de estudo");
+            model.addAttribute("itens", List.of(Map.of("titulo", "Spring Boot", "url", "/")));
+            return "estudo/catalogo";
+        }
+
+        @GetMapping("/__test/estudo/questao")
+        String question(@RequestParam(defaultValue = "false") boolean respondida, Model model) {
+            model.addAttribute("titulo", "Quiz de Spring");
+            model.addAttribute("enunciado", "O que é injeção de dependências?");
+            model.addAttribute("posicao", 2);
+            model.addAttribute("totalQuestoes", 4);
+            model.addAttribute("alternativas", List.of(
+                    Map.of("id", 21L, "texto", "Um tipo de banco de dados"),
+                    Map.of("id", 22L, "texto", "Fornecer dependências a um objeto")));
+            model.addAttribute("respondida", respondida);
+            model.addAttribute("alternativaSelecionadaId", respondida ? 22L : null);
+            return "estudo/questao";
         }
     }
 }

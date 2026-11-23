@@ -1,0 +1,200 @@
+:root {
+    color-scheme: light;
+    --background: #f4f6fb;
+    --surface: #fff;
+    --text: #182438;
+    --border: #ccd5e3;
+    --accent: #284d91;
+    --accent-hover: #1c3a71;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--background);
+    color: var(--text);
+    font-family: system-ui, sans-serif;
+    line-height: 1.55;
+}
+
+h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+a {
+    color: var(--accent);
+}
+
+:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.skip-link {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    transform: translateY(-200%);
+    background: var(--surface);
+}
+
+.skip-link:focus {
+    z-index: 1;
+    transform: translateY(0);
+}
+
+.container {
+    width: min(calc(100% - 2rem), 62rem);
+    margin-inline: auto;
+}
+
+.site-header {
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    padding-block: 0.85rem;
+}
+
+.site-brand {
+    color: var(--text);
+    font-size: 1.125rem;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.site-brand:hover {
+    text-decoration: underline;
+}
+
+.app-content,
+.auth-content {
+    margin-block: clamp(1.5rem, 7vw, 4rem);
+}
+
+.auth-content {
+    max-width: 28rem;
+}
+
+.surface {
+    padding: clamp(1.15rem, 4vw, 2rem);
+    border: 1px solid var(--border);
+    border-radius: 0.875rem;
+    background: var(--surface);
+    box-shadow: 0 4px 18px rgb(24 36 56 / 5%);
+}
+
+.surface > :last-child {
+    margin-bottom: 0;
+}
+
+.login-form,
+.catalog-list,
+.option-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 650;
+}
+
+.login-form input,
+.button {
+    font: inherit;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.55rem 0.75rem;
+}
+
+.login-form input {
+    width: 100%;
+    color: inherit;
+}
+
+.button {
+    border-color: transparent;
+    background: var(--accent);
+    color: var(--surface);
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.button:hover {
+    background: var(--accent-hover);
+}
+
+.button-secondary {
+    border-color: var(--border);
+    background: var(--surface);
+    color: var(--text);
+}
+
+.button-secondary:hover {
+    background: var(--background);
+}
+
+.feedback {
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.5rem;
+    background: #eaf1fc;
+}
+
+.feedback-error {
+    background: #fff0ed;
+    color: #8c2b21;
+}
+
+.catalog-list,
+.option-list {
+    margin: 0.85rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.catalog-list a,
+.option-list label {
+    display: flex;
+    align-items: baseline;
+    gap: 0.65rem;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    overflow-wrap: anywhere;
+}
+
+.catalog-list a:hover {
+    background: var(--background);
+}
+
+.question-options {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.question-options legend {
+    padding: 0;
+    font-weight: 650;
+}
+
+.option-list input {
+    margin: 0;
+    accent-color: var(--accent);
+}

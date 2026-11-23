@@ -1,18 +1,14 @@
 <!doctype html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${titulo}">Catálogo de estudo</title>
-</head>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina(${titulo}, ~{:: corpo}, true)}">
 <body>
-<main>
+<th:block th:fragment="corpo">
     <section th:replace="~{estudo/pagina :: pagina(${titulo}, ~{:: lista})}">
         <div th:fragment="lista">
-            <p th:if="${erro}" role="alert" th:text="${erro}">Não foi possível carregar o catálogo.</p>
+            <p class="feedback feedback-error" th:if="${erro}" role="alert" th:text="${erro}">Não foi possível carregar o catálogo.</p>
             <th:block th:unless="${erro}">
                 <p th:if="${#lists.isEmpty(itens)}" th:text="${mensagemVazia}">Nenhum item disponível.</p>
-                <ul th:unless="${#lists.isEmpty(itens)}">
+                <ul class="catalog-list" th:unless="${#lists.isEmpty(itens)}">
                     <li th:each="item : ${itens}">
                         <a th:href="${item.url}" th:text="${item.titulo}">Título</a>
                     </li>
@@ -20,6 +16,6 @@
             </th:block>
         </div>
     </section>
-</main>
+</th:block>
 </body>
 </html>

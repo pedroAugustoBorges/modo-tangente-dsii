@@ -1,16 +1,12 @@
 <!doctype html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Entrar · Modo Tangente</title>
-</head>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Entrar', ~{:: corpo}, false)}">
 <body>
-<main>
+<section class="surface" th:fragment="corpo">
     <h1>Entrar no Modo Tangente</h1>
-    <p th:if="${param.error != null}" role="alert">Confira o e-mail e a senha.</p>
-    <p th:if="${param.logout != null}" role="status">Você saiu da sua conta.</p>
-    <form method="post" th:action="@{/login}">
+    <p class="feedback feedback-error" th:if="${param.error != null}" role="alert">Confira o e-mail e a senha.</p>
+    <p class="feedback" th:if="${param.logout != null}" role="status">Você saiu da sua conta.</p>
+    <form class="login-form" method="post" th:action="@{/login}">
         <div>
             <label for="email">E-mail</label>
             <input id="email" name="email" type="email" autocomplete="username" required>
@@ -19,8 +15,8 @@
             <label for="password">Senha</label>
             <input id="password" name="password" type="password" autocomplete="current-password" required>
         </div>
-        <button type="submit">Entrar</button>
+        <button class="button" type="submit">Entrar</button>
     </form>
-</main>
+</section>
 </body>
 </html>
