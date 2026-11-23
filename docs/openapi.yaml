@@ -1,13 +1,294 @@
 openapi: 3.0.3
 info:
   title: Modo Tangente API
-  version: 0.5.0
-  description: Contratos de sessão, tentativas, respostas, conversas e mensagens. Requer sessão autenticada.
+  version: 0.6.0
+  description: Catálogo didático, sessão, tentativas, respostas, conversas e mensagens. A administração exige uma conta ADMIN ativa.
 servers:
   - url: /
 security:
   - sessionCookie: []
 paths:
+  /api/admin/topics:
+    get:
+      summary: Lista tópicos para administração
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/TopicView' } }
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+    post:
+      summary: Cria registro em tópicos
+      parameters:
+        - { $ref: '#/components/parameters/CsrfToken' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TopicData' }
+      responses:
+        '201':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TopicView' }
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '400': { description: Dados inválidos }
+  /api/admin/topics/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer, minimum: 1, format: int64 } }
+    get:
+      summary: Consulta registro em tópicos
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TopicView' }
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '404': { description: Recurso ou vínculo indisponível }
+    put:
+      summary: Atualiza registro em tópicos
+      parameters:
+        - { $ref: '#/components/parameters/CsrfToken' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TopicData' }
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TopicView' }
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '400': { description: Dados inválidos }
+        '404': { description: Recurso ou vínculo indisponível }
+    delete:
+      summary: Desativa registro em tópicos
+      parameters:
+        - { $ref: '#/components/parameters/CsrfToken' }
+      responses:
+        '204':
+          description: Recurso desativado
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '404': { description: Recurso ou vínculo indisponível }
+  /api/admin/quizzes:
+    get:
+      summary: Lista quizzes para administração
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/QuizView' } }
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+    post:
+      summary: Cria registro em quizzes
+      parameters:
+        - { $ref: '#/components/parameters/CsrfToken' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuizData' }
+      responses:
+        '201':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuizView' }
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '400': { description: Dados inválidos }
+        '404': { description: Recurso ou vínculo indisponível }
+  /api/admin/quizzes/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer, minimum: 1, format: int64 } }
+    get:
+      summary: Consulta registro em quizzes
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuizView' }
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '404': { description: Recurso ou vínculo indisponível }
+    put:
+      summary: Atualiza registro em quizzes
+      parameters:
+        - { $ref: '#/components/parameters/CsrfToken' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuizData' }
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuizView' }
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '400': { description: Dados inválidos }
+        '404': { description: Recurso ou vínculo indisponível }
+    delete:
+      summary: Desativa registro em quizzes
+      parameters:
+        - { $ref: '#/components/parameters/CsrfToken' }
+      responses:
+        '204':
+          description: Recurso desativado
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '404': { description: Recurso ou vínculo indisponível }
+  /api/admin/quizzes/{quizId}/questions:
+    parameters:
+      - { name: quizId, in: path, required: true, schema: { type: integer, minimum: 1, format: int64 } }
+    get:
+      summary: Lista questões para administração
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/QuestionView' } }
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '404': { description: Recurso ou vínculo indisponível }
+    post:
+      summary: Cria registro em questões
+      parameters:
+        - { $ref: '#/components/parameters/CsrfToken' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuestionData' }
+      responses:
+        '201':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuestionView' }
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '400': { description: Dados inválidos }
+        '404': { description: Recurso ou vínculo indisponível }
+        '409': { description: Posição já publicada }
+  /api/admin/quizzes/{quizId}/questions/{id}:
+    parameters:
+      - { name: quizId, in: path, required: true, schema: { type: integer, minimum: 1, format: int64 } }
+      - { name: id, in: path, required: true, schema: { type: integer, minimum: 1, format: int64 } }
+    get:
+      summary: Consulta registro em questões
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuestionView' }
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '404': { description: Recurso ou vínculo indisponível }
+    put:
+      summary: Substitui a questão com todas as alternativas e devolve o ID da versão resultante
+      parameters:
+        - { $ref: '#/components/parameters/CsrfToken' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuestionData' }
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuestionView' }
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '400': { description: Dados inválidos }
+        '404': { description: Recurso ou vínculo indisponível }
+        '409': { description: Posição já publicada }
+    delete:
+      summary: Desativa registro em questões
+      parameters:
+        - { $ref: '#/components/parameters/CsrfToken' }
+      responses:
+        '204':
+          description: Recurso desativado
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '404': { description: Recurso ou vínculo indisponível }
+  /api/admin/quizzes/{quizId}/questions/{id}/options:
+    parameters:
+      - { name: quizId, in: path, required: true, schema: { type: integer, minimum: 1, format: int64 } }
+      - { name: id, in: path, required: true, schema: { type: integer, minimum: 1, format: int64 } }
+    get:
+      summary: Lista alternativas para edição administrativa
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/OptionAdminView' } }
+        '403': { description: Requer administrador ativo e CSRF válido para escrita }
+        '404': { description: Recurso ou vínculo indisponível }
+  /api/topics:
+    get:
+      summary: Lista tópicos ativos
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/TopicView' } }
+  /api/topics/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer, minimum: 1, format: int64 } }
+    get:
+      summary: Consulta tópico ativo
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TopicView' }
+        '404': { description: Recurso ou vínculo indisponível }
+  /api/topics/{topicId}/quizzes:
+    parameters:
+      - { name: topicId, in: path, required: true, schema: { type: integer, minimum: 1, format: int64 } }
+    get:
+      summary: Lista quizzes ativos do tópico
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/QuizView' } }
+        '404': { description: Recurso ou vínculo indisponível }
+  /api/quizzes/{quizId}/questions:
+    parameters:
+      - { name: quizId, in: path, required: true, schema: { type: integer, minimum: 1, format: int64 } }
+    get:
+      summary: Lista questões publicadas com alternativas em ordem
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/StudentQuestion' } }
+        '404': { description: Recurso ou vínculo indisponível }
+  /api/attempts/{attemptId}/questions/{questionId}:
+    parameters:
+      - { name: attemptId, in: path, required: true, schema: { type: integer, minimum: 1, format: int64 } }
+      - { name: questionId, in: path, required: true, schema: { type: integer, minimum: 1, format: int64 } }
+    get:
+      summary: Consulta o enunciado e as alternativas da versão usada na tentativa própria
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StudentQuestion' }
+        '404': { description: Recurso ou vínculo indisponível }
   /api/me:
     get:
       operationId: getCurrentUser
@@ -267,6 +548,97 @@ components:
       schema:
         type: string
   schemas:
+    TopicData:
+      type: object
+      required: [title, displayOrder, active]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 160 }
+        description: { type: string, nullable: true }
+        displayOrder: { type: integer, minimum: 0 }
+        active: { type: boolean }
+    TopicView:
+      type: object
+      required: [id, title, displayOrder, active]
+      properties:
+        id: { type: integer, format: int64, minimum: 1 }
+        title: { type: string, minLength: 1, maxLength: 160 }
+        description: { type: string, nullable: true }
+        displayOrder: { type: integer, minimum: 0 }
+        active: { type: boolean }
+    QuizData:
+      type: object
+      required: [topicId, title, displayOrder, active]
+      properties:
+        topicId: { type: integer, format: int64, minimum: 1 }
+        title: { type: string, minLength: 1, maxLength: 180 }
+        description: { type: string, nullable: true }
+        displayOrder: { type: integer, minimum: 0 }
+        active: { type: boolean }
+        instructions: { type: string, nullable: true }
+    QuizView:
+      type: object
+      required: [id, topicId, title, displayOrder, active]
+      properties:
+        id: { type: integer, format: int64, minimum: 1 }
+        topicId: { type: integer, format: int64, minimum: 1 }
+        title: { type: string, minLength: 1, maxLength: 180 }
+        description: { type: string, nullable: true }
+        displayOrder: { type: integer, minimum: 0 }
+        active: { type: boolean }
+        instructions: { type: string, nullable: true }
+    QuestionData:
+      type: object
+      required: [position, statement, points, active, options]
+      properties:
+        position: { type: integer, minimum: 1 }
+        statement: { type: string }
+        studyGuidance: { type: string, nullable: true }
+        points: { type: number, minimum: 0, maximum: 99999.99, multipleOf: 0.01 }
+        active: { type: boolean }
+        options: { type: array, items: { $ref: '#/components/schemas/OptionData' } }
+    QuestionView:
+      type: object
+      required: [id, quizId, position, statement, points, active]
+      properties:
+        id: { type: integer, format: int64, minimum: 1 }
+        quizId: { type: integer, format: int64, minimum: 1 }
+        position: { type: integer, minimum: 1 }
+        statement: { type: string }
+        studyGuidance: { type: string, nullable: true }
+        points: { type: number, minimum: 0, maximum: 99999.99, multipleOf: 0.01 }
+        active: { type: boolean }
+    OptionData:
+      type: object
+      required: [position, text, correct]
+      properties:
+        position: { type: integer, minimum: 1 }
+        text: { type: string }
+        correct: { type: boolean }
+    OptionAdminView:
+      type: object
+      required: [id, position, text, correct]
+      properties:
+        id: { type: integer, format: int64, minimum: 1 }
+        position: { type: integer, minimum: 1 }
+        text: { type: string }
+        correct: { type: boolean }
+    StudentOption:
+      type: object
+      required: [id, position, text]
+      properties:
+        id: { type: integer, format: int64, minimum: 1 }
+        position: { type: integer, minimum: 1 }
+        text: { type: string }
+    StudentQuestion:
+      type: object
+      required: [id, quizId, position, statement, points, options]
+      properties:
+        id: { type: integer, format: int64, minimum: 1 }
+        quizId: { type: integer, format: int64, minimum: 1 }
+        position: { type: integer, minimum: 1 }
+        statement: { type: string }
+        points: { type: number, minimum: 0, maximum: 99999.99, multipleOf: 0.01 }
+        options: { type: array, items: { $ref: '#/components/schemas/StudentOption' } }
     CurrentUserView:
       type: object
       required: [id, fullName, email, role]

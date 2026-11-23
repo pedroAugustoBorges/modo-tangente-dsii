@@ -1,0 +1,17 @@
+{
+  "source": "modo-tangente-dsii@aaa7c5f:OpenRouterTutorServiceTests.testContext",
+  "topics": [{
+    "topic": {"title": "Spring Boot", "description": "Framework para aplicações Java", "displayOrder": 0, "active": true},
+    "quizzes": [{
+      "title": "Quiz de Spring", "description": "Quiz introdutório",
+      "instructions": "Considere o contexto da aplicação", "displayOrder": 0,
+      "questions": [{
+        "position": 1, "statement": "O que é injeção de dependência?", "studyGuidance": "Revise IoC e beans",
+        "points": 1, "active": true, "options": [
+          {"position": 1, "text": "Instanciar tudo manualmente", "correct": false},
+          {"position": 2, "text": "Receber dependências do container", "correct": true}
+        ]
+      }]
+    }]
+  }]
+}

@@ -245,7 +245,7 @@ class SessionControllerTests {
     @TestComponent
     @RestController
     static class AdminRoutes {
-        @GetMapping({"/admin", "/api/admin/topics"})
+        @GetMapping("/admin")
         String adminEndpoint() {
             return "OK";
         }

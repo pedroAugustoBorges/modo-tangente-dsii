@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "quiz_questions", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"quiz_id", "position"}),
         @UniqueConstraint(columnNames = {"id", "quiz_id"})
 })
 public class QuizQuestion {
