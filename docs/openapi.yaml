@@ -2,12 +2,27 @@ openapi: 3.0.3
 info:
   title: Modo Tangente API
   version: 0.5.0
-  description: Contratos de tentativas, respostas, conversas e mensagens. Requer sessão autenticada.
+  description: Contratos de sessão, tentativas, respostas, conversas e mensagens. Requer sessão autenticada.
 servers:
   - url: /
 security:
   - sessionCookie: []
 paths:
+  /api/me:
+    get:
+      operationId: getCurrentUser
+      summary: Consulta a conta da sessão atual
+      responses:
+        '200':
+          description: Identidade da conta autenticada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserView'
+        '302':
+          description: Sessão ausente, com redirecionamento para o login
+        '401':
+          description: Conta da sessão inativa ou indisponível
   /api/quizzes/{quizId}/attempts:
     post:
       operationId: startQuizAttempt
@@ -252,6 +267,21 @@ components:
       schema:
         type: string
   schemas:
+    CurrentUserView:
+      type: object
+      required: [id, fullName, email, role]
+      properties:
+        id:
+          type: integer
+          format: int64
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [STUDENT, ADMIN]
     QuizAttemptSummary:
       type: object
       required: [id, quizId, status, startedAt]

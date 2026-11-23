@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Início', ~{:: corpo}, true)}">
+<body>
+<section class="surface" th:fragment="corpo">
+    <h1 th:text="|Olá, ${usuario.fullName}.|">Olá!</h1>
+    <p th:text="${usuario.role == 'ADMIN'} ? 'Administrador' : 'Estudante'">Estudante</p>
+</section>
+</body>
+</html>

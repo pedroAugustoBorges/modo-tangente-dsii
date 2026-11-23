@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, conteudo, autenticada)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="|${titulo} · Modo Tangente|">Modo Tangente</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<a class="skip-link" href="#conteudo-principal">Ir para o conteúdo</a>
+<header class="site-header" th:if="${autenticada}">
+    <nav class="site-nav container" aria-label="Navegação principal">
+        <a class="site-brand" th:href="@{/}">Modo Tangente</a>
+        <form method="post" th:action="@{/logout}">
+            <button class="button button-secondary" type="submit">Sair</button>
+        </form>
+    </nav>
+</header>
+<main id="conteudo-principal" class="container" th:classappend="${autenticada} ? 'app-content' : 'auth-content'"
+      tabindex="-1">
+    <th:block th:replace="${conteudo}"></th:block>
+</main>
+</body>
+</html>

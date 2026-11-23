@@ -1,18 +1,14 @@
 <!doctype html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${titulo}">Questão do quiz</title>
-</head>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina(${titulo}, ~{:: corpo}, true)}">
 <body>
-<main>
+<th:block th:fragment="corpo">
     <section th:replace="~{estudo/pagina :: pagina(${titulo}, ~{:: conteudoQuestao})}">
         <div th:fragment="conteudoQuestao">
             <p th:text="|Questão ${posicao} de ${totalQuestoes}|">Questão 1 de 3</p>
-            <fieldset th:disabled="${respondida}">
+            <fieldset class="question-options" th:disabled="${respondida}">
                 <legend th:text="${enunciado}">Enunciado da questão</legend>
-                <ul>
+                <ul class="option-list">
                     <li th:each="alternativa : ${alternativas}">
                         <label>
                             <input type="radio" name="optionId" th:value="${alternativa.id}"
@@ -22,9 +18,9 @@
                     </li>
                 </ul>
             </fieldset>
-            <p th:if="${respondida}">Questão respondida.</p>
+            <p class="feedback" th:if="${respondida}">Questão respondida.</p>
         </div>
     </section>
-</main>
+</th:block>
 </body>
 </html>
