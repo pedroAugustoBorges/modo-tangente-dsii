@@ -44,7 +44,10 @@ public class CurrentAppUserService {
         }
 
         String normalizedEmail = authentication.getName().trim().toLowerCase(Locale.ROOT);
-        return appUserRepository.findByEmailIgnoreCase(normalizedEmail)
-                .filter(user -> Boolean.TRUE.equals(user.getActive()));
+        Optional<AppUser> account = authentication.getPrincipal() instanceof AppUserPrincipal principal
+                ? appUserRepository.findById(principal.userId())
+                        .filter(user -> normalizedEmail.equalsIgnoreCase(user.getEmail()))
+                : appUserRepository.findByEmailIgnoreCase(normalizedEmail);
+        return account.filter(user -> Boolean.TRUE.equals(user.getActive()));
     }
 }

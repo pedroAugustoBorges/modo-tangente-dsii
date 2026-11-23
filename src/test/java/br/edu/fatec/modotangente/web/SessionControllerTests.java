@@ -117,6 +117,20 @@ class SessionControllerTests {
     }
 
     @Test
+    void rejectsAStaleSessionWhenItsEmailChangesOwner() throws Exception {
+        String previousEmail = "original@example.com";
+        AppUser original = createUser(previousEmail, "STUDENT", true);
+        MockHttpSession session = loginSession(original);
+
+        original.setEmail("atualizado@example.com");
+        appUserRepository.saveAndFlush(original);
+        createUser(previousEmail, "STUDENT", true);
+
+        mockMvc.perform(get("/api/me").session(session)).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/attempts").session(session)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void deniesStudentsAccessToAdminPagesAndTheAdminApi() throws Exception {
         AppUser student = createUser("estudante@example.com", "STUDENT", true);
         MockHttpSession session = loginSession(student);

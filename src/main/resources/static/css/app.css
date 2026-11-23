@@ -124,6 +124,7 @@ a {
 
 .login-form input {
     width: 100%;
+    border-color: #707c90;
     color: inherit;
 }
 
