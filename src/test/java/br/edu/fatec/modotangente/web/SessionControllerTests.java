@@ -167,6 +167,14 @@ class SessionControllerTests {
     }
 
     @Test
+    void exposesDeploymentHealthWithoutRequiringLogin() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"))
+                .andExpect(jsonPath("$.components").doesNotExist());
+    }
+
+    @Test
     void rendersTheStudyCatalogWithTheAuthenticatedNavigation() throws Exception {
         MockHttpSession session = loginSession(createUser("catalogo@example.com", "STUDENT", true));
 

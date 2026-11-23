@@ -13,7 +13,7 @@ As respostas da IA terão um tom descontraído inspirado na forma de explicar e 
 - Flyway para migrations versionadas
 - OpenRouter para integração com modelos de linguagem
 
-O backend usa autenticação Spring Security. O Supabase é o provedor PostgreSQL, não um segundo provedor de login. Chaves e credenciais são lidas de variáveis de ambiente ou do `.env` local; nenhum segredo real deve ser versionado.
+O Spring Security autentica as contas do Modo Tangente armazenadas no PostgreSQL do Supabase. Chaves e credenciais são lidas de variáveis de ambiente ou do `.env` local, que é ignorado pelo Git.
 
 ## Integrantes
 
@@ -24,20 +24,27 @@ O backend usa autenticação Spring Security. O Supabase é o provedor PostgreSQ
 
 ## Estado do projeto
 
-O projeto já contém as nove entidades JPA, as migrations Flyway V1 e V2 e as APIs de tentativas, progresso por questão, conversas e mensagens. O backend também tem um adaptador OpenRouter com prompt contextual, limites de histórico, timeout e falhas sanitizadas; os testes simulam a API e não usam a chave real. O uso do chat com o catálogo depende do bean de produção `QuizContextProvider` e o início de tentativas depende do `QuizQuestionProvider`, ambos da integração de João. Também seguem pendentes a autenticação integrada de Enzo, as telas completas, o deploy e a validação final com os provedores reais.
+O projeto contém nove entidades JPA, as migrations Flyway V1 e V2 e as APIs de tentativas, respostas, conversas e mensagens. O login usa `AppUser`, senhas com BCrypt e os perfis `STUDENT` e `ADMIN`. A sessão pode ser consultada em `GET /api/me`. Login, início, catálogo e questão usam o layout Thymeleaf compartilhado.
+
+A execução fora dos testes depende das implementações de produção de `QuizQuestionProvider` e `QuizContextProvider` na integração do catálogo. As rotas com dados das telas de estudo, as páginas administrativas e a publicação ainda estão pendentes.
 
 ## Execução local
 
-Requer Java 17. Execute os testes com `./mvnw test` (Windows: `mvnw.cmd test`). O perfil local usa H2 em arquivo para desenvolvimento e carrega opcionalmente o `.env` para a configuração do OpenRouter.
+Requer Java 17. Execute os testes com `./mvnw test` em Linux ou macOS, ou `.\mvnw.cmd test` no PowerShell. A suíte usa H2 em memória e simula o catálogo e o OpenRouter nos cenários que dependem deles.
 
-Para configurar o tutor, preencha `OPENROUTER_API_KEY` e, se necessário, ajuste `OPENROUTER_MODEL` no `.env`. O `.env` é local e ignorado pelo Git. Para testar com o Supabase, preencha também `SUPABASE_JDBC_URL`, `SUPABASE_DB_USER` e `SUPABASE_DB_PASSWORD` com os dados da opção de conexão escolhida no Supabase. No PowerShell, ative o perfil e inicie a aplicação:
+Com o catálogo integrado, `./mvnw spring-boot:run` inicia o perfil local, que usa H2 em arquivo. Para usar PostgreSQL, copie `.env.example` para `.env`, preencha as variáveis do Supabase com os dados de uma única opção de conexão e inicie com o perfil `supabase`. Exemplo no PowerShell.
 
 ```powershell
 $env:SPRING_PROFILES_ACTIVE = "supabase"
 .\mvnw.cmd spring-boot:run
 ```
 
-O perfil `supabase` carrega o `.env` e executa as migrations Flyway no schema `public` ao iniciar. Use uma base de teste vazia: a V1 cria as tabelas e a V2 adiciona o controle de recuperação de mensagens em processamento. Não coloque credenciais reais no código nem as envie pelo chat.
+## Preparação do deploy
+
+1. Gere o pacote com `./mvnw clean verify` ou `.\mvnw.cmd clean verify` no PowerShell. O executável fica em `target/modo-tangente-dsii-0.1.0-SNAPSHOT.jar`.
+2. Após a integração do catálogo, defina `SPRING_PROFILES_ACTIVE=supabase`, `SUPABASE_JDBC_URL`, `SUPABASE_DB_USER` e `SUPABASE_DB_PASSWORD` no ambiente da hospedagem. Configure `OPENROUTER_API_KEY` para usar o tutor e ajuste `OPENROUTER_MODEL` se necessário. A porta padrão é 8080 e pode ser alterada com `SERVER_PORT`.
+3. Inicie o pacote com `java -jar target/modo-tangente-dsii-0.1.0-SNAPSHOT.jar`. O Flyway aplica as migrations no schema `public` antes da validação do Hibernate. Use um PostgreSQL vazio e isolado para validar V1 e V2 antes de apontar para o banco compartilhado.
+4. Configure `GET /actuator/health` como verificação de saúde da aplicação. Depois, abra `/login` e valide a sessão com uma conta `AppUser` ativa, provisionada com BCrypt e o perfil correspondente. Confirme a integração de quiz e chat antes de registrar o endereço publicado.
 
 ## Documentação
 

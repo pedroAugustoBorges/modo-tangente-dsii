@@ -5,7 +5,7 @@ Este índice acompanha o que já foi incorporado ao repositório, por responsáv
 | Integrante | Situação registrada |
 |---|---|
 | Pedro Augusto de Melo Borges | P1–P7 registrados em [done-pedro-augusto.md](docs/done/pedro-augusto.md); P3–P7 estão em commits locais à frente de `origin/main`, e P6/P7 passaram na suíte local. |
-| Enzo Akira | Commit de escopo e README registrado em [done-enzo-akira.md](docs/done/enzo-akira.md); login, estrutura comum de interface e administração permanecem pendentes de integração. |
+| Enzo Akira | [Registro de entregas](docs/done/enzo-akira.md) com escopo, login, layout compartilhado e preparação do deploy. As páginas administrativas dependem do catálogo. |
 | João Lima | [done-joao-lima.md](docs/done/joao-lima.md) registra a situação observada no histórico; catálogo, CRUD e provedores de contexto continuam dependências de integração. |
 | Thiago G. Soares | Três commits adicionaram a estrutura visual inicial; [done-thiago-soares.md](docs/done/thiago-soares.md) registra o que já está no repositório e as integrações ainda pendentes. |
 
