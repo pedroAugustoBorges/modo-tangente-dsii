@@ -34,6 +34,9 @@ public class Message {
     @Column(name = "llm_status", length = 20)
     private String llmStatus;
 
+    @Column(name = "processing_started_at")
+    private Instant processingStartedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -53,6 +56,8 @@ public class Message {
     public void setReplyToMessageId(Long replyToMessageId) { this.replyToMessageId = replyToMessageId; }
     public String getLlmStatus() { return llmStatus; }
     public void setLlmStatus(String llmStatus) { this.llmStatus = llmStatus; }
+    public Instant getProcessingStartedAt() { return processingStartedAt; }
+    public void setProcessingStartedAt(Instant processingStartedAt) { this.processingStartedAt = processingStartedAt; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 

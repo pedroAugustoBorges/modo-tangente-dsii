@@ -12,6 +12,9 @@ import java.util.Optional;
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
     Optional<Conversation> findByQuestionAttemptId(Long questionAttemptId);
 
+    @Query("select conversation.questionAttempt.questionId from Conversation conversation where conversation.id = :conversationId")
+    Optional<Long> findQuestionIdByConversationId(@Param("conversationId") Long conversationId);
+
     @Query("""
             select conversation
             from Conversation conversation

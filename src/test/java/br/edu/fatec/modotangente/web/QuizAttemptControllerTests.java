@@ -19,6 +19,7 @@ import br.edu.fatec.modotangente.repository.QuizQuestionRepository;
 import br.edu.fatec.modotangente.repository.QuizRepository;
 import br.edu.fatec.modotangente.repository.TopicRepository;
 import br.edu.fatec.modotangente.service.QuizQuestionProvider;
+import br.edu.fatec.modotangente.service.QuizContextProvider;
 import br.edu.fatec.modotangente.service.TutorService;
 import br.edu.fatec.modotangente.web.dto.SendMessageRequest;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -71,6 +72,7 @@ class QuizAttemptControllerTests {
     @Autowired private QuizQuestionRepository questionRepository;
     @Autowired private QuizQuestionOptionRepository optionRepository;
     @MockitoBean private QuizQuestionProvider questionProvider;
+    @MockitoBean private QuizContextProvider quizContextProvider;
     @MockitoBean private TutorService tutorService;
 
     private Long quizId;
@@ -340,7 +342,7 @@ class QuizAttemptControllerTests {
                                 new SendMessageRequest("Conteúdo diferente", requestId))))
                 .andExpect(status().isConflict());
 
-        verify(tutorService, times(1)).generateReply(eq(conversationId), anyList());
+        verify(tutorService, times(1)).generateReply(eq(firstQuestionId), anyList());
         mockMvc.perform(get(path, conversationId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -390,6 +392,7 @@ class QuizAttemptControllerTests {
         pending.setContent("Pergunta em andamento");
         pending.setRequestId(requestId);
         pending.setLlmStatus("PROCESSING");
+        pending.setProcessingStartedAt(java.time.Instant.now());
         pending = messageRepository.saveAndFlush(pending);
 
         mockMvc.perform(post("/api/conversations/{conversationId}/messages", conversationId)
@@ -403,6 +406,35 @@ class QuizAttemptControllerTests {
                 .andExpect(jsonPath("$.tutorMessage").doesNotExist());
 
         verifyNoInteractions(tutorService);
+    }
+
+    @Test
+    @WithMockUser(username = STUDENT_EMAIL)
+    void recoversAStaleProcessingRequestAndClaimsOnlyOneRetry() throws Exception {
+        Long attemptId = startAttempt();
+        Long conversationId = startConversation(attemptId, firstQuestionId);
+        UUID requestId = UUID.randomUUID();
+        Message stale = new Message();
+        stale.setConversationId(conversationId);
+        stale.setSenderRole("STUDENT");
+        stale.setContent("Pergunta que ficou presa");
+        stale.setRequestId(requestId);
+        stale.setLlmStatus("PROCESSING");
+        stale.setProcessingStartedAt(java.time.Instant.now().minus(java.time.Duration.ofMinutes(3)));
+        stale = messageRepository.saveAndFlush(stale);
+
+        mockMvc.perform(post("/api/conversations/{conversationId}/messages", conversationId)
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new SendMessageRequest(stale.getContent(), requestId))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.studentMessage.llmStatus").value("COMPLETED"))
+                .andExpect(jsonPath("$.tutorMessage.content").value("Resposta de teste: Pergunta que ficou presa"));
+
+        org.junit.jupiter.api.Assertions.assertEquals(
+                "COMPLETED", messageRepository.findByConversationIdAndRequestId(conversationId, requestId)
+                        .orElseThrow().getLlmStatus());
+        verify(tutorService, times(1)).generateReply(eq(firstQuestionId), anyList());
     }
 
     @Test
