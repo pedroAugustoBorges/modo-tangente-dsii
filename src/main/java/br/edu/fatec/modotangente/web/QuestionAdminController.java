@@ -12,6 +12,11 @@ import static org.springframework.http.HttpStatus.*;
 public class QuestionAdminController {
     private final QuestionCatalogService catalog;
 
+    @GetMapping("/{id}/options")
+    public List<OptionAdminView> options(@PathVariable Long quizId, @PathVariable Long id) {
+        return catalog.listOptions(quizId, id);
+    }
+
     public QuestionAdminController(QuestionCatalogService catalog) {
         this.catalog = catalog;
     }
