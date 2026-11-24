@@ -214,7 +214,7 @@ class SessionControllerTests {
 
         String answeredPage = mockMvc.perform(get("/__test/estudo/questao").param("respondida", "true").session(session))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Questão respondida.")))
+                .andExpect(content().string(containsString("Resposta correta.")))
                 .andExpect(content().string(containsString("disabled=\"disabled\"")))
                 .andReturn().getResponse().getContentAsString();
 
@@ -264,14 +264,20 @@ class SessionControllerTests {
         @GetMapping("/__test/estudo/questao")
         String question(@RequestParam(defaultValue = "false") boolean respondida, Model model) {
             model.addAttribute("titulo", "Quiz de Spring");
-            model.addAttribute("enunciado", "O que é injeção de dependências?");
+            model.addAttribute("tentativaId", 1L);
+            model.addAttribute("questao", Map.of(
+                    "id", 2L,
+                    "statement", "O que é injeção de dependências?",
+                    "options", List.of(
+                            Map.of("id", 21L, "text", "Um tipo de banco de dados"),
+                            Map.of("id", 22L, "text", "Fornecer dependências a um objeto"))));
+            var progress = new br.edu.fatec.modotangente.web.dto.QuestionAttemptProgress(
+                    2L, 2, respondida ? 22L : null, respondida, respondida ? true : null, null);
+            model.addAttribute("progresso", progress);
+            model.addAttribute("questoes", List.of(progress, progress, progress, progress));
             model.addAttribute("posicao", 2);
-            model.addAttribute("totalQuestoes", 4);
-            model.addAttribute("alternativas", List.of(
-                    Map.of("id", 21L, "texto", "Um tipo de banco de dados"),
-                    Map.of("id", 22L, "texto", "Fornecer dependências a um objeto")));
-            model.addAttribute("respondida", respondida);
-            model.addAttribute("alternativaSelecionadaId", respondida ? 22L : null);
+            model.addAttribute("respondidas", respondida ? 1 : 0);
+            model.addAttribute("editavel", !respondida);
             return "estudo/questao";
         }
     }

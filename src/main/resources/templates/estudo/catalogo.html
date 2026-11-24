@@ -7,14 +7,14 @@
         <div th:fragment="lista">
             <p class="feedback feedback-error" th:if="${erro}" role="alert" th:text="${erro}">Não foi possível carregar o catálogo.</p>
             <th:block th:unless="${erro}">
-                <p th:if="${#lists.isEmpty(itens)}" th:text="${mensagemVazia}">Nenhum item disponível.</p>
+                <p class="empty-state" th:if="${#lists.isEmpty(itens)}" th:text="${mensagemVazia}">Nenhum item disponível.</p>
                 <ul class="catalog-list" th:unless="${#lists.isEmpty(itens)}">
                     <li th:each="item : ${itens}">
-                        <a th:href="@{${item.url}}" th:text="${item.titulo}">Título</a>
+                        <a th:href="@{${item.url}}"><span th:text="${item.titulo}">Título</span><span class="list-arrow" aria-hidden="true">→</span></a>
                     </li>
                 </ul>
             </th:block>
-            <p th:if="${voltar}"><a th:href="@{${voltar}}">Voltar aos tópicos</a></p>
+            <p class="section-back" th:if="${voltar}"><a th:href="@{${voltar}}">Voltar aos tópicos</a></p>
         </div>
     </section>
 </th:block>

@@ -11,6 +11,10 @@
 <header class="site-header" th:if="${autenticada}">
     <nav class="site-nav container" aria-label="Navegação principal">
         <a class="site-brand" th:href="@{/}">Modo Tangente</a>
+        <div class="nav-links">
+            <a th:href="@{/estudo}">Catálogo</a>
+            <a th:href="@{/estudo/tentativas}">Minhas tentativas</a>
+        </div>
         <form method="post" th:action="@{/logout}">
             <button class="button button-secondary" type="submit">Sair</button>
         </form>
