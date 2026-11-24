@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Chat da questão', ~{:: corpo}, true)}">
+<body>
+<section class="surface" th:fragment="corpo">
+    <h1>Chat da questão</h1>
+    <p th:text="${questao.statement}">Enunciado</p>
+    <p><a th:href="@{/estudo/tentativas/{tentativa}/questoes/{questao}(tentativa=${tentativaId},questao=${questao.id})}">Voltar à questão</a></p>
+    <p th:if="${#lists.isEmpty(mensagens)}">Ainda não há mensagens nesta conversa.</p>
+    <ol class="chat-history" aria-label="Histórico da conversa">
+        <li th:each="mensagem : ${mensagens}">
+            <strong th:text="${mensagem.senderRole == 'STUDENT'} ? 'Você' : 'Tutor'">Autor</strong>
+            <p class="chat-message" th:text="${mensagem.content}">Mensagem</p>
+            <p th:if="${mensagem.llmStatus == 'FAILED'}">O tutor não conseguiu responder.</p>
+            <p th:if="${mensagem.llmStatus == 'PROCESSING'}">A resposta do tutor está pendente.</p>
+            <button class="button button-secondary" type="button" hidden
+                    th:if="${mensagem.llmStatus == 'FAILED' or mensagem.llmStatus == 'PROCESSING'}"
+                    th:data-retry-id="${mensagem.requestId}"
+                    th:text="${mensagem.llmStatus == 'FAILED'} ? 'Recuperar mensagem' : 'Recuperar mensagem pendente'">
+                Recuperar mensagem
+            </button>
+        </li>
+    </ol>
+    <p id="chat-status" role="status" aria-live="polite"></p>
+    <form id="chat-form" hidden
+          th:data-endpoint="@{/api/conversations/{id}/messages(id=${conversaId})}"
+          th:data-csrf-header="${_csrf.headerName}" th:data-csrf-token="${_csrf.token}">
+        <label for="chat-content">Sua mensagem</label>
+        <textarea id="chat-content" name="content" rows="4" required></textarea>
+        <p><button class="button" type="submit">Enviar</button></p>
+    </form>
+    <noscript><p>Ative o JavaScript para enviar mensagens ao tutor.</p></noscript>
+    <script defer th:src="@{/js/study-chat.js}"></script>
+</section>
+</body>
+</html>

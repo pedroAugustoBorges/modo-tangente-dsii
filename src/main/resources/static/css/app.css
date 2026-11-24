@@ -199,3 +199,36 @@ a {
     margin: 0;
     accent-color: var(--accent);
 }
+
+.chat-history {
+    padding-inline-start: 1.5rem;
+}
+
+.chat-history li {
+    margin-block: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+}
+
+.chat-message {
+    margin: 0.25rem 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+#chat-content {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #707c90;
+    border-radius: 0.5rem;
+    font: inherit;
+    resize: vertical;
+}
+
+.button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}

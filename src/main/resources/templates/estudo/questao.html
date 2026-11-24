@@ -26,6 +26,10 @@
             <p class="feedback" th:if="${progresso.answered}"
                th:text="${progresso.isCorrect} ? 'Resposta correta.' : 'Resposta incorreta.'"></p>
             <p th:unless="${editavel or progresso.answered}">A tentativa está encerrada.</p>
+            <form method="post"
+                  th:action="@{/estudo/tentativas/{tentativa}/questoes/{questao}/chat(tentativa=${tentativaId},questao=${questao.id})}">
+                <p><button class="button button-secondary" type="submit">Abrir chat da questão</button></p>
+            </form>
             <nav aria-label="Questões da tentativa">
                 <ul class="catalog-list">
                     <li th:each="item, estado : ${questoes}">
