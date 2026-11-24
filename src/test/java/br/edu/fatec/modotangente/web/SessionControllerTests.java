@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -47,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@Import({SessionControllerTests.AdminRoutes.class, SessionControllerTests.StudyPages.class})
+@Import(SessionControllerTests.StudyPages.class)
 class SessionControllerTests {
 
     private static final String PASSWORD = "senha-de-teste";
@@ -83,6 +82,7 @@ class SessionControllerTests {
         mockMvc.perform(get("/").session(session))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("aria-label=\"Navegação principal\"")))
+                .andExpect(content().string(not(containsString("href=\"/admin\""))))
                 .andExpect(content().string(containsString("Conta de Teste")));
 
         mockMvc.perform(get("/api/me").session(session))
@@ -136,6 +136,8 @@ class SessionControllerTests {
         MockHttpSession session = loginSession(student);
 
         mockMvc.perform(get("/admin").session(session)).andExpect(status().isForbidden());
+        mockMvc.perform(post("/admin/topicos/novo").session(session).with(csrf()))
+                .andExpect(status().isForbidden());
         mockMvc.perform(get("/api/admin/topics").session(session)).andExpect(status().isForbidden());
     }
 
@@ -144,6 +146,9 @@ class SessionControllerTests {
         AppUser admin = createUser("admin@example.com", "ADMIN", true);
         MockHttpSession session = loginSession(admin);
 
+        mockMvc.perform(get("/estudo").session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("href=\"/admin\"")));
         mockMvc.perform(get("/admin").session(session)).andExpect(status().isOk());
         mockMvc.perform(get("/api/admin/topics").session(session)).andExpect(status().isOk());
 
@@ -240,15 +245,6 @@ class SessionControllerTests {
                 .andExpect(authenticated().withRoles(user.getRole()))
                 .andReturn();
         return (MockHttpSession) result.getRequest().getSession(false);
-    }
-
-    @TestComponent
-    @RestController
-    static class AdminRoutes {
-        @GetMapping("/admin")
-        String adminEndpoint() {
-            return "OK";
-        }
     }
 
     @TestComponent

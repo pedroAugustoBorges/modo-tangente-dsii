@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina(${editada == null ? 'Nova questão' : 'Editar questão'}, ~{:: corpo}, true)}">
+<body>
+<div th:fragment="corpo" class="admin-stack">
+    <a class="section-back" th:href="@{/admin/quizzes/{id}/questoes(id=${quiz.id})}"
+       th:text="|Voltar às questões de ${quiz.title}|">Voltar às questões</a>
+    <section class="surface">
+        <h1 th:text="${editada == null ? 'Nova questão' : 'Editar questão'}">Editar questão</h1>
+        <p th:replace="~{admin/fragmentos :: mensagem}"></p>
+        <form class="admin-form" method="post" th:object="${questao}" data-question-editor
+              th:action="${editada == null} ? @{/admin/quizzes/{id}/questoes/nova(id=${quiz.id})}
+                         : @{/admin/quizzes/{quizId}/questoes/{id}(quizId=${quiz.id},id=${editada.id})}">
+            <div th:replace="~{admin/fragmentos :: erros}"></div>
+            <label>
+                Enunciado
+                <textarea th:field="*{statement}" th:errorclass="admin-invalid" rows="5" required></textarea>
+                <small th:replace="~{admin/fragmentos :: erro('statement', 'Informe o enunciado.')}"></small>
+            </label>
+            <label>
+                Orientação para o tutor
+                <textarea th:field="*{studyGuidance}" rows="3"></textarea>
+            </label>
+            <div class="admin-fields">
+                <label>
+                    Posição
+                    <input type="number" th:field="*{position}" th:errorclass="admin-invalid" min="1" required>
+                    <small th:replace="~{admin/fragmentos :: erro('position', 'Informe um número inteiro a partir de 1.')}"></small>
+                </label>
+                <label>
+                    Pontos
+                    <input type="number" th:field="*{points}" th:errorclass="admin-invalid" min="0"
+                           max="99999.99" step="0.01" required>
+                    <small th:replace="~{admin/fragmentos :: erro('points', 'Informe de 0 a 99.999,99 pontos.')}"></small>
+                </label>
+                <label>
+                    Situação
+                    <select th:field="*{active}" th:errorclass="admin-invalid" required>
+                        <option value="false">Inativa</option>
+                        <option value="true">Publicada</option>
+                    </select>
+                    <small th:replace="~{admin/fragmentos :: erro('active', 'Selecione uma situação.')}"></small>
+                </label>
+            </div>
+
+            <fieldset class="admin-alternatives">
+                <legend>Alternativas</legend>
+                <p class="muted">Para publicar, cadastre pelo menos duas alternativas e marque uma como correta.</p>
+                <small th:replace="~{admin/fragmentos :: erro('options', 'Confira as alternativas da questão.')}"></small>
+                <input type="hidden" name="_options" value="on" data-empty-options
+                       th:disabled="${!#lists.isEmpty(alternativas)}">
+                <div class="admin-stack" data-alternatives>
+                    <th:block th:each="opcao, item : ${alternativas}">
+                        <div th:replace="~{:: alternativa(${item.index}, ${opcao})}"></div>
+                    </th:block>
+                </div>
+                <template data-option-template>
+                    <div th:replace="~{:: alternativa(${null}, ${null})}"></div>
+                </template>
+                <button class="button button-secondary" type="button" data-add-option hidden>Adicionar alternativa</button>
+                <noscript><p>Ative o JavaScript para adicionar ou remover alternativas.</p></noscript>
+            </fieldset>
+
+            <div class="admin-actions">
+                <button class="button" type="submit">Salvar questão</button>
+                <a class="button button-secondary"
+                   th:href="@{/admin/quizzes/{id}/questoes(id=${quiz.id})}">Voltar à lista</a>
+            </div>
+        </form>
+        <form th:if="${editada != null and editada.active}" class="admin-deactivate" method="post"
+              th:action="@{/admin/quizzes/{quizId}/questoes/{id}/desativar(quizId=${quiz.id},id=${editada.id})}">
+            <button class="button button-secondary" type="submit">Despublicar questão</button>
+        </form>
+    </section>
+    <script th:src="@{/js/admin-questao.js}" defer></script>
+</div>
+
+<fieldset th:fragment="alternativa(indice, opcao)" class="admin-option" data-option
+          th:with="prefixo=|options[${indice ?: 0}]|,
+           erroTexto=${indice != null and camposInvalidos != null and camposInvalidos.contains(prefixo + '.text')},
+           erroPosicao=${indice != null and camposInvalidos != null and camposInvalidos.contains(prefixo + '.position')},
+           erroCorreta=${indice != null and camposInvalidos != null and camposInvalidos.contains(prefixo + '.correct')}">
+    <legend>Alternativa</legend>
+    <div class="admin-fields">
+        <label>
+            Texto
+            <textarea th:name="|${prefixo}.text|" th:classappend="${erroTexto} ? 'admin-invalid'"
+                      th:aria-invalid="${erroTexto ? 'true' : null}" rows="2" required>
+[[${opcao?.text}]]</textarea>
+            <small th:if="${erroTexto}" class="admin-field-error">Informe o texto da alternativa.</small>
+        </label>
+        <label>
+            Posição
+            <input type="number" th:name="|${prefixo}.position|" th:value="${opcao?.position}"
+                   th:classappend="${erroPosicao} ? 'admin-invalid'" th:aria-invalid="${erroPosicao ? 'true' : null}"
+                   min="1" required data-option-position>
+            <small th:if="${erroPosicao}" class="admin-field-error">Informe uma posição inteira a partir de 1.</small>
+        </label>
+    </div>
+    <div class="admin-bar">
+        <label class="admin-check">
+            <input type="checkbox" th:name="|${prefixo}.correct|" value="true" th:checked="${opcao?.correct}"
+                   th:aria-invalid="${erroCorreta ? 'true' : null}" data-option-correct>
+            Correta
+            <small th:if="${erroCorreta}" class="admin-field-error">Confirme se a alternativa é correta.</small>
+        </label>
+        <input type="hidden" th:name="|_${prefixo}.correct|" value="on">
+        <button class="button button-secondary" type="button" data-remove-option hidden>Remover</button>
+    </div>
+</fieldset>
+</body>
+</html>

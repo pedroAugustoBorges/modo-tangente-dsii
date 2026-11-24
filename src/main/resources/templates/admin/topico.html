@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina(${editado == null ? 'Novo tópico' : 'Editar tópico'}, ~{:: corpo}, true)}">
+<body>
+<div th:fragment="corpo" class="admin-stack">
+    <a class="section-back" th:href="@{/admin}">Voltar à administração</a>
+    <section class="surface">
+        <h1 th:text="${editado == null ? 'Novo tópico' : 'Editar tópico'}">Editar tópico</h1>
+        <form class="admin-form" method="post" th:object="${topico}"
+              th:action="${editado == null} ? @{/admin/topicos/novo} : @{/admin/topicos/{id}(id=${editado.id})}">
+            <div th:replace="~{admin/fragmentos :: erros}"></div>
+            <label>
+                Título
+                <input type="text" th:field="*{title}" th:errorclass="admin-invalid" maxlength="160" required>
+                <small th:replace="~{admin/fragmentos :: erro('title', 'Informe um título de até 160 caracteres.')}"></small>
+            </label>
+            <label>
+                Descrição
+                <textarea th:field="*{description}" rows="3"></textarea>
+            </label>
+            <div class="admin-fields">
+                <label>
+                    Ordem de exibição
+                    <input type="number" th:field="*{displayOrder}" th:errorclass="admin-invalid" min="0" required>
+                    <small th:replace="~{admin/fragmentos :: erro('displayOrder', 'Informe um número inteiro a partir de 0.')}"></small>
+                </label>
+                <label>
+                    Situação
+                    <select th:field="*{active}" th:errorclass="admin-invalid" required>
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                    </select>
+                    <small th:replace="~{admin/fragmentos :: erro('active', 'Selecione uma situação.')}"></small>
+                </label>
+            </div>
+            <div class="admin-actions">
+                <button class="button" type="submit">Salvar tópico</button>
+                <a class="button button-secondary" th:href="@{/admin}">Cancelar</a>
+            </div>
+        </form>
+        <form th:if="${editado != null and editado.active}" class="admin-deactivate" method="post"
+              th:action="@{/admin/topicos/{id}/desativar(id=${editado.id})}">
+            <button class="button button-secondary" type="submit">Desativar tópico</button>
+        </form>
+    </section>
+</div>
+</body>
+</html>

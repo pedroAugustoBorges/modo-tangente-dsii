@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina(${editado == null ? 'Novo quiz' : 'Editar quiz'}, ~{:: corpo}, true)}">
+<body>
+<div th:fragment="corpo" class="admin-stack">
+    <a class="section-back" th:href="@{/admin}">Voltar à administração</a>
+    <section class="surface">
+        <div class="admin-bar">
+            <h1 th:text="${editado == null ? 'Novo quiz' : 'Editar quiz'}">Editar quiz</h1>
+            <a th:if="${editado != null}" class="button button-secondary"
+               th:href="@{/admin/quizzes/{id}/questoes(id=${editado.id})}">Gerenciar questões</a>
+        </div>
+        <p class="empty-state" th:if="${#lists.isEmpty(topicos)}">
+            <a th:href="@{/admin/topicos/novo}">Crie um tópico</a> para cadastrar o primeiro quiz.
+        </p>
+        <form th:unless="${#lists.isEmpty(topicos)}" class="admin-form" method="post" th:object="${quiz}"
+              th:action="${editado == null} ? @{/admin/quizzes/novo} : @{/admin/quizzes/{id}(id=${editado.id})}">
+            <div th:replace="~{admin/fragmentos :: erros}"></div>
+            <label>
+                Tópico
+                <select th:field="*{topicId}" th:errorclass="admin-invalid" required>
+                    <option value="">Selecione um tópico</option>
+                    <option th:each="topico : ${topicos}" th:value="${topico.id}"
+                            th:text="${topico.title + (topico.active ? '' : ' (inativo)')}">Tópico</option>
+                </select>
+                <small th:replace="~{admin/fragmentos :: erro('topicId', 'Selecione um tópico disponível.')}"></small>
+            </label>
+            <label>
+                Título
+                <input type="text" th:field="*{title}" th:errorclass="admin-invalid" maxlength="180" required>
+                <small th:replace="~{admin/fragmentos :: erro('title', 'Informe um título de até 180 caracteres.')}"></small>
+            </label>
+            <label>
+                Descrição
+                <textarea th:field="*{description}" rows="3"></textarea>
+            </label>
+            <label>
+                Instruções
+                <textarea th:field="*{instructions}" rows="3"></textarea>
+            </label>
+            <div class="admin-fields">
+                <label>
+                    Ordem de exibição
+                    <input type="number" th:field="*{displayOrder}" th:errorclass="admin-invalid" min="0" required>
+                    <small th:replace="~{admin/fragmentos :: erro('displayOrder', 'Informe um número inteiro a partir de 0.')}"></small>
+                </label>
+                <label>
+                    Situação
+                    <select th:field="*{active}" th:errorclass="admin-invalid" required>
+                        <option value="false">Inativo</option>
+                        <option value="true">Ativo</option>
+                    </select>
+                    <small th:replace="~{admin/fragmentos :: erro('active', 'Selecione uma situação.')}"></small>
+                </label>
+            </div>
+            <div class="admin-actions">
+                <button class="button" type="submit">Salvar quiz</button>
+                <a class="button button-secondary" th:href="@{/admin}">Cancelar</a>
+            </div>
+        </form>
+        <form th:if="${editado != null and editado.active}" class="admin-deactivate" method="post"
+              th:action="@{/admin/quizzes/{id}/desativar(id=${editado.id})}">
+            <button class="button button-secondary" type="submit">Desativar quiz</button>
+        </form>
+    </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Administração do catálogo', ~{:: corpo}, true)}">
+<body>
+<div th:fragment="corpo" class="admin-stack">
+    <h1>Administração do catálogo</h1>
+    <p th:replace="~{admin/fragmentos :: mensagem}"></p>
+
+    <section class="surface" aria-labelledby="admin-topicos">
+        <div class="admin-bar">
+            <h2 id="admin-topicos">Tópicos</h2>
+            <a class="button" th:href="@{/admin/topicos/novo}">Novo tópico</a>
+        </div>
+        <p class="empty-state" th:if="${#lists.isEmpty(topicos)}">Nenhum tópico cadastrado.</p>
+        <ul class="admin-list" th:unless="${#lists.isEmpty(topicos)}">
+            <li th:each="topico : ${topicos}">
+                <div>
+                    <a th:href="@{/admin/topicos/{id}(id=${topico.id})}" th:text="${topico.title}">Tópico</a>
+                    <small th:text="|${topico.active ? 'Ativo' : 'Inativo'} · Ordem ${topico.displayOrder}|"></small>
+                </div>
+            </li>
+        </ul>
+    </section>
+
+    <section class="surface" aria-labelledby="admin-quizzes">
+        <div class="admin-bar">
+            <h2 id="admin-quizzes">Quizzes</h2>
+            <a class="button" th:unless="${#lists.isEmpty(topicos)}" th:href="@{/admin/quizzes/novo}">Novo quiz</a>
+        </div>
+        <p class="empty-state" th:if="${#lists.isEmpty(quizzes)}"
+           th:text="${#lists.isEmpty(topicos)} ? 'Crie um tópico para cadastrar o primeiro quiz.' : 'Nenhum quiz cadastrado.'">
+            Nenhum quiz cadastrado.
+        </p>
+        <ul class="admin-list" th:unless="${#lists.isEmpty(quizzes)}">
+            <li th:each="quiz : ${quizzes}">
+                <div>
+                    <a th:href="@{/admin/quizzes/{id}(id=${quiz.id})}" th:text="${quiz.title}">Quiz</a>
+                    <small th:text="|${titulosDosTopicos[quiz.topicId]} · ${quiz.active ? 'Ativo' : 'Inativo'} · Ordem ${quiz.displayOrder}|"></small>
+                </div>
+                <a class="button button-secondary" th:href="@{/admin/quizzes/{id}/questoes(id=${quiz.id})}"
+                   th:aria-label="|Questões de ${quiz.title}|">Questões</a>
+            </li>
+        </ul>
+    </section>
+</div>
+</body>
+</html>

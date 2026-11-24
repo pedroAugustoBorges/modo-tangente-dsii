@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<p th:fragment="mensagem" class="feedback feedback-success" th:if="${mensagem}"
+   role="status" th:text="${mensagem}">Alterações salvas.</p>
+
+<div th:fragment="erros" class="feedback feedback-error" th:if="${#fields.hasAnyErrors()}" role="alert">
+    <p th:if="${#fields.hasErrors('*') and !#fields.hasGlobalErrors()}">Confira os campos destacados.</p>
+    <ul th:if="${#fields.hasGlobalErrors()}">
+        <li th:each="erro : ${#fields.globalErrors()}" th:text="${erro}"></li>
+    </ul>
+</div>
+
+<small th:fragment="erro(campo, mensagem)" th:if="${#fields.hasErrors(campo)}"
+       class="admin-field-error" th:text="${mensagem}"></small>
+</body>
+</html>

@@ -14,6 +14,7 @@
         <div class="nav-links">
             <a th:href="@{/estudo}">Catálogo</a>
             <a th:href="@{/estudo/tentativas}">Minhas tentativas</a>
+            <a th:if="${administrador}" th:href="@{/admin}">Administração</a>
         </div>
         <form method="post" th:action="@{/logout}">
             <button class="button button-secondary" type="submit">Sair</button>

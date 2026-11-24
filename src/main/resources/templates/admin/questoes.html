@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Questões de ' + ${quiz.title}, ~{:: corpo}, true)}">
+<body>
+<div th:fragment="corpo" class="admin-stack">
+    <a class="section-back" th:href="@{/admin}">Voltar à administração</a>
+    <section class="surface">
+        <div class="admin-bar">
+            <h1 th:text="|Questões de ${quiz.title}|">Questões do quiz</h1>
+            <a class="button" th:href="@{/admin/quizzes/{id}/questoes/nova(id=${quiz.id})}">Nova questão</a>
+        </div>
+        <p th:replace="~{admin/fragmentos :: mensagem}"></p>
+        <p class="empty-state" th:if="${#lists.isEmpty(questoes)}">Nenhuma questão cadastrada.</p>
+        <ul class="admin-list" th:unless="${#lists.isEmpty(questoes)}">
+            <li th:each="questao : ${questoes}">
+                <div>
+                    <a th:href="@{/admin/quizzes/{quizId}/questoes/{id}(quizId=${quiz.id},id=${questao.id})}"
+                       th:text="${questao.statement}">Questão</a>
+                    <small th:text="|Posição ${questao.position} · ${questao.active ? 'Publicada' : 'Inativa'}|"></small>
+                </div>
+            </li>
+        </ul>
+    </section>
+</div>
+</body>
+</html>

@@ -26,11 +26,13 @@ O Spring Security autentica as contas do Modo Tangente armazenadas no PostgreSQL
 
 O projeto contém as entidades de estudo e o registro de importações, as migrations Flyway V1 a V4 e as APIs de catálogo, tentativas, respostas, conversas e mensagens. O login usa `AppUser`, senhas com BCrypt e os perfis `STUDENT` e `ADMIN`. A sessão pode ser consultada em `GET /api/me`. Login, início, catálogo e questão usam o layout Thymeleaf compartilhado.
 
-O catálogo fornece as questões publicadas para novas tentativas e o contexto persistido para o tutor. O aluno pode acessar tópicos, iniciar e retomar tentativas, enviar respostas e consultar o chat por questão nas telas de estudo. As páginas administrativas e a publicação ainda estão pendentes.
+O catálogo fornece as questões publicadas para novas tentativas e o contexto persistido para o tutor. O aluno pode acessar tópicos, iniciar e retomar tentativas, enviar respostas e consultar o chat por questão nas telas de estudo. A hospedagem e a validação com o Supabase compartilhado ainda estão pendentes.
 
 ## Catálogo
 
-Administradores criam e atualizam tópicos e quizzes em `/api/admin/topics` e `/api/admin/quizzes`. Em `/api/admin/quizzes/{quizId}/questions`, o corpo da questão inclui a lista completa de alternativas. Use POST para criar e PUT no ID para substituir enunciado, alternativas e ordem em uma transação. Um rascunho aceita uma lista vazia. Publicar exige pelo menos duas alternativas e uma correta. DELETE desativa o recurso. Quando há tentativa associada, PUT devolve o ID da nova versão e a anterior continua disponível na tentativa original.
+Com uma conta `ADMIN` ativa, abra **Administração** na navegação ou acesse `/admin` para criar, editar e desativar tópicos e quizzes. Abra **Questões** em um quiz para editar enunciados, orientação do tutor, pontuação e alternativas. Uma questão inativa pode ser salva sem alternativas. Para publicar, inclua pelo menos duas alternativas com posições distintas e marque exatamente uma como correta. Se a questão já foi usada em uma tentativa, o painel abre a nova versão após salvar e a tentativa original preserva seu conteúdo.
+
+A API administrativa serve as mesmas operações em `/api/admin/topics`, `/api/admin/quizzes` e `/api/admin/quizzes/{quizId}/questions`. Use POST para criar, PUT no ID para atualizar e DELETE para desativar. O corpo da questão inclui a lista completa de alternativas, que é salva na mesma transação.
 
 A leitura do aluno parte de `GET /api/topics`, passa por `GET /api/topics/{topicId}/quizzes` e termina em `GET /api/quizzes/{quizId}/questions`. O histórico usa `GET /api/attempts/{attemptId}/questions/{questionId}` com a sessão do dono da tentativa. O gabarito é usado na correção do servidor. No chat, o tutor recebe a alternativa escolhida e o resultado daquela tentativa, sem receber os marcadores de correção das demais opções. Apenas a administração autenticada tem acesso a esses marcadores ao editar alternativas.
 
@@ -47,7 +49,7 @@ $env:OPENROUTER_LIVE_TEST = "true"
 
 Esse cenário usa H2 e faz uma única requisição real ao OpenRouter.
 
-Requer Java 17. Execute os testes com `./mvnw test` em Linux ou macOS, ou `.\mvnw.cmd test` no PowerShell. A suíte usa H2 em memória e simula o catálogo e o OpenRouter nos cenários que dependem deles.
+Requer Java 17. Execute os testes com `./mvnw test` em Linux ou macOS, ou `.\mvnw.cmd test` no PowerShell. A suíte usa H2 em memória, exercita o catálogo e o painel administrativo com dados persistidos e simula chamadas ao OpenRouter.
 
 `./mvnw spring-boot:run` inicia o perfil local, que usa H2 em arquivo. Para usar PostgreSQL, copie `.env.example` para `.env`, preencha as variáveis do Supabase com os dados de uma única opção de conexão e inicie com o perfil `supabase`. Exemplo no PowerShell.
 
@@ -61,7 +63,7 @@ $env:SPRING_PROFILES_ACTIVE = "supabase"
 1. Gere o pacote com `./mvnw clean verify` ou `.\mvnw.cmd clean verify` no PowerShell. O executável fica em `target/modo-tangente-dsii-0.1.0-SNAPSHOT.jar`.
 2. Defina `SPRING_PROFILES_ACTIVE=supabase`, `SUPABASE_JDBC_URL`, `SUPABASE_DB_USER` e `SUPABASE_DB_PASSWORD` no ambiente da hospedagem. Configure `OPENROUTER_API_KEY` para usar o tutor e ajuste `OPENROUTER_MODEL` se necessário. A porta padrão é 8080 e pode ser alterada com `SERVER_PORT`.
 3. Inicie o pacote com `java -jar target/modo-tangente-dsii-0.1.0-SNAPSHOT.jar`. O Flyway aplica as migrations no schema `public` antes da validação do Hibernate. Use um PostgreSQL vazio e isolado para validar as migrations antes de apontar para o banco compartilhado.
-4. Configure `GET /actuator/health` como verificação de saúde da aplicação. Depois, abra `/login` e valide a sessão com uma conta `AppUser` ativa, provisionada com BCrypt e o perfil correspondente. Confirme a integração de quiz e chat antes de registrar o endereço publicado.
+4. Configure `GET /actuator/health` como verificação de saúde da aplicação. Depois, abra `/login` e valide a sessão com contas `AppUser` ativas, provisionadas com BCrypt e os perfis correspondentes. Confirme o painel em `/admin` e a jornada de quiz e chat com as respectivas contas antes de registrar o endereço publicado.
 
 ## Documentação
 
