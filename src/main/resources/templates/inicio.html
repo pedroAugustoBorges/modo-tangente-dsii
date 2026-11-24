@@ -6,6 +6,7 @@
     <h1 th:text="|Olá, ${usuario.fullName}.|">Olá!</h1>
     <p th:text="${usuario.role == 'ADMIN'} ? 'Administrador' : 'Estudante'">Estudante</p>
     <p><a th:href="@{/estudo}">Estudar por tópico</a></p>
+    <p><a th:href="@{/estudo/tentativas}">Minhas tentativas</a></p>
 </section>
 </body>
 </html>

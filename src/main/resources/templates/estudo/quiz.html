@@ -7,6 +7,11 @@
     <p th:if="${quiz.description}" th:text="${quiz.description}"></p>
     <p th:if="${quiz.instructions}" th:text="${quiz.instructions}"></p>
     <p th:unless="${disponivel}">Este quiz ainda não tem questões publicadas.</p>
+    <p class="feedback feedback-error" th:if="${erro}" role="alert" th:text="${erro}"></p>
+    <form th:if="${disponivel}" method="post" th:action="@{/estudo/quizzes/{id}/tentativas(id=${quiz.id})}">
+        <button class="button" type="submit">Iniciar tentativa</button>
+    </form>
+    <p><a th:href="@{/estudo/tentativas}">Minhas tentativas</a></p>
     <p><a th:href="@{/estudo/topicos/{id}(id=${quiz.topicId})}">Voltar ao tópico</a></p>
 </section>
 </body>
