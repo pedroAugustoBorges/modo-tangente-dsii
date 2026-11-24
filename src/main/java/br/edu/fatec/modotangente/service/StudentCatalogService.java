@@ -29,6 +29,20 @@ public class StudentCatalogService {
         this.progress = progress;
     }
 
+    public List<TopicView> topics() {
+        return topics.findByActiveTrueOrderByDisplayOrderAscIdAsc().stream().map(TopicView::from).toList();
+    }
+
+    public TopicView topic(Long topicId) {
+        return topics.findByIdAndActiveTrue(topicId).map(TopicView::from)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
+    }
+
+    public QuizView quiz(Long quizId) {
+        return quizzes.findByIdAndActiveTrueAndTopicActiveTrue(quizId).map(QuizView::from)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
+    }
+
     public List<QuizView> quizzes(Long topicId) {
         topics.findByIdAndActiveTrue(topicId).orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
         return quizzes.findByTopicIdAndActiveTrueOrderByDisplayOrderAscIdAsc(topicId).stream()
