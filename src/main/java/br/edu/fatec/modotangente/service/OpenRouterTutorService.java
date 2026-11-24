@@ -1,12 +1,15 @@
 package br.edu.fatec.modotangente.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +19,7 @@ import java.util.Locale;
 public class OpenRouterTutorService implements TutorService {
 
     private static final String CHAT_COMPLETIONS_PATH = "/chat/completions";
+    private static final Logger log = LoggerFactory.getLogger(OpenRouterTutorService.class);
 
     private final RestClient restClient;
     private final QuizContextProvider contextProvider;
@@ -78,11 +82,15 @@ public class OpenRouterTutorService implements TutorService {
                     ? null
                     : response.choices().get(0).message().content();
             if (content == null || content.isBlank()) {
+                log.warn("OpenRouter returned HTTP 200 without assistant content for model {}", model);
                 throw new TutorProviderException("O OpenRouter retornou uma resposta vazia.");
             }
             return content.trim();
+        } catch (RestClientResponseException exception) {
+            log.warn("OpenRouter completion request returned HTTP status {}", exception.getStatusCode().value());
+            throw new TutorProviderException("O provedor de IA está indisponível ou retornou uma resposta inválida.");
         } catch (RestClientException exception) {
-            // Do not include provider response bodies, request headers or credentials in errors.
+            log.warn("OpenRouter completion request failed with {}", exception.getClass().getSimpleName());
             throw new TutorProviderException("O provedor de IA está indisponível ou retornou uma resposta inválida.");
         }
     }

@@ -1,6 +1,6 @@
 # Registro de entregas — Pedro Augusto de Melo Borges
 
-Atualizado em 23/11/2026. P1–P7 já estão incorporados em `main`/`origin/main`; esta validação acrescenta mudanças ainda locais e não commitadas. O plano detalhado permanece fora do repositório.
+Atualizado em 24/11/2026. P1–P7 e a integração complementar abaixo estão incorporados em `main`/`origin/main` após o commit desta atualização. O plano detalhado permanece fora do repositório.
 
 ## Entregue
 
@@ -56,6 +56,10 @@ O serviço do Pedro consome `QuizQuestionProvider.listActiveForAttempt(quizId)`,
 - Adicionado teste de integração em `CatalogIntegrationTests`: o provedor real lê dados e resultado da resposta do H2; o adaptador envia questão, alternativa selecionada, resultado e pergunta do aluno a um HTTP simulado, sem enviar o gabarito das demais alternativas.
 - Adicionado `OpenRouterConversationLiveTest`, opt-in por `OPENROUTER_LIVE_TEST=true`: simula via MockMvc as rotas de iniciar tentativa, responder à questão, criar conversa e enviar mensagem. Foi executado com H2 e credencial carregada do `.env`; a chamada real ao OpenRouter concluiu e retornou resposta não vazia.
 - Na execução normal da suíte, o teste live fica ignorado por padrão; o teste de integração local não usa rede. A execução live não acessou o Supabase e não aplicou migrations no banco compartilhado.
+- Complemento de 24/11: o catálogo agora apresenta Spring Boot e Spring Web MVC como tópicos separados; `spring-web-v1.json` acrescenta cinco questões sem alterar a origem nem o checksum da base v1. `CATALOG_IMPORT_RESOURCES` carrega base e complemento na mesma inicialização, preservando suporte ao `CATALOG_IMPORT_RESOURCE` legado.
+- O teste de integração importa ambos os arquivos, confirma idempotência e consulta o quiz Spring Web pelas rotas REST, sem expor gabarito. O teste de configuração verifica a ordem e o suporte aos dois formatos de propriedade. A inicialização Spring Boot com os dois recursos em H2 também foi verificada.
+- A suíte normal em 24/11 detectou 50 testes: 49 passaram e o live opt-in foi ignorado, sem falhas nem erros. A chamada real foi executada separadamente, com a chave do `.env` carregada apenas no processo do teste, sem imprimir a chave; a resposta ao aluno confirmou que acertou e explicou a injeção de dependências. Não houve acesso ao Supabase.
+- O adapter agora registra apenas o status HTTP ou a classe da falha de transporte quando o OpenRouter falha; corpo remoto e credenciais continuam fora dos logs.
 
 ## Integração pendente do grupo
 

@@ -1,6 +1,7 @@
 package br.edu.fatec.modotangente.web;
 
 import br.edu.fatec.modotangente.domain.AppUser;
+import br.edu.fatec.modotangente.domain.Topic;
 import br.edu.fatec.modotangente.repository.*;
 import br.edu.fatec.modotangente.service.*;
 import br.edu.fatec.modotangente.web.dto.*;
@@ -24,6 +25,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -251,5 +253,47 @@ class CatalogIntegrationTests {
         var invalid = source.replace("testContext", "invalid").replace("\"correct\": true", "\"correct\": false");
         assertThrows(ResponseStatusException.class, () -> importer.load(invalid.getBytes(StandardCharsets.UTF_8)));
         assertEquals(before + 1, topicRows.count());
+    }
+
+    @Test
+    void importsSpringBootAndSpringWebAsSeparateTopicsAndServesTheirQuizThroughSpringWeb() throws Exception {
+        byte[] baseCatalog;
+        byte[] springWebCatalog;
+        try (var input = new ClassPathResource("catalog/dsii-fundamentos-v1.json").getInputStream()) {
+            baseCatalog = input.readAllBytes();
+        }
+        try (var input = new ClassPathResource("catalog/spring-web-v1.json").getInputStream()) {
+            springWebCatalog = input.readAllBytes();
+        }
+
+        long topicsBeforeImport = topicRows.count();
+        assertTrue(importer.load(baseCatalog));
+        assertTrue(importer.load(springWebCatalog));
+        assertFalse(importer.load(baseCatalog));
+        assertFalse(importer.load(springWebCatalog));
+        assertEquals(topicsBeforeImport + 6, topicRows.count());
+
+        mvc.perform(get("/api/topics").with(user(student.getEmail())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$..title", hasItem("Spring Boot")))
+                .andExpect(jsonPath("$..title", hasItem("Spring Web (Spring MVC)")));
+
+        Long springWebTopicId = topicRows.findAll().stream()
+                .filter(topic -> "Spring Web (Spring MVC)".equals(topic.getTitle()))
+                .map(Topic::getId)
+                .findFirst()
+                .orElseThrow();
+        var quizzesForSpringWeb = json.readTree(mvc.perform(get("/api/topics/{topicId}/quizzes", springWebTopicId)
+                        .with(user(student.getEmail())))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        assertEquals(1, quizzesForSpringWeb.size());
+
+        mvc.perform(get("/api/quizzes/{quizId}/questions", quizzesForSpringWeb.get(0).path("id").asLong())
+                        .with(user(student.getEmail())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", org.hamcrest.Matchers.is(5)))
+                .andExpect(jsonPath("$..correct").doesNotExist())
+                .andExpect(jsonPath("$..is_correct").doesNotExist());
     }
 }

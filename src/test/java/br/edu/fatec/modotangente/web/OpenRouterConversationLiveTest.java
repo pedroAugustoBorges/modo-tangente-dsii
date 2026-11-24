@@ -55,6 +55,9 @@ class OpenRouterConversationLiveTest {
 
     @Test
     void answersAQuestionWithItsPersistedCorrectnessAndReturnsTheLiveTutorReply() throws Exception {
+        assertTrue(environment.getProperty("openrouter.api-key", "").length() > 0,
+                "O teste live precisa de uma chave OpenRouter configurada, sem imprimi-la.");
+
         String email = "openrouter-live-" + UUID.randomUUID() + "@example.com";
         AppUser student = new AppUser();
         student.setEmail(email);
@@ -118,8 +121,6 @@ class OpenRouterConversationLiveTest {
 
         String reply = exchange.path("tutorMessage").path("content").asText();
         assertFalse(reply.isBlank(), "O OpenRouter deve retornar uma resposta textual.");
-        assertTrue(environment.getProperty("openrouter.api-key", "").length() > 0,
-                "O teste live deve receber uma chave no ambiente, sem imprimi-la.");
         System.out.println("Resposta real do tutor OpenRouter:\n" + reply);
     }
 }
