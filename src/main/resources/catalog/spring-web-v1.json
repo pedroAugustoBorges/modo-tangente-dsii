@@ -1,0 +1,168 @@
+{
+  "source": "modo-tangente-dsii@catalogo-spring-web-v1",
+  "topics": [
+    {
+      "topic": {
+        "title": "Spring Web (Spring MVC)",
+        "description": "Construção de aplicações web e APIs REST com controllers anotados, mapeamento HTTP, binding de dados e tratamento de erros.",
+        "displayOrder": 6,
+        "active": true
+      },
+      "quizzes": [
+        {
+          "title": "Controllers e endpoints REST com Spring Web",
+          "description": "Fundamentos de Spring MVC usados para receber requisições HTTP e devolver respostas web e REST.",
+          "instructions": "Escolha uma alternativa por questão. Considere Spring Web MVC, a camada web usada pelo projeto Spring Boot para controllers e endpoints REST.",
+          "displayOrder": 1,
+          "questions": [
+            {
+              "position": 1,
+              "statement": "Em Spring Web MVC, qual é a função principal de um controller anotado com @RestController?",
+              "studyGuidance": "Compare @RestController com @Controller: observe como o retorno do método é tratado em APIs REST.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {
+                  "position": 1,
+                  "text": "Criar automaticamente uma entidade JPA para cada rota.",
+                  "correct": false
+                },
+                {
+                  "position": 2,
+                  "text": "Receber requisições web e escrever o retorno dos métodos diretamente no corpo da resposta, normalmente convertendo objetos para JSON.",
+                  "correct": true
+                },
+                {
+                  "position": 3,
+                  "text": "Substituir o DispatcherServlet e executar consultas SQL sem um service.",
+                  "correct": false
+                },
+                {
+                  "position": 4,
+                  "text": "Gerar apenas páginas HTML e impedir o envio de respostas JSON.",
+                  "correct": false
+                }
+              ]
+            },
+            {
+              "position": 2,
+              "statement": "Uma rota recebe uma requisição GET para /api/quizzes/42, e o número 42 faz parte do caminho da URL. Qual anotação permite vincular esse segmento a um parâmetro do método do controller?",
+              "studyGuidance": "Revise URI template variables e a diferença entre valores que fazem parte do caminho e parâmetros de consulta.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {
+                  "position": 1,
+                  "text": "@RequestBody",
+                  "correct": false
+                },
+                {
+                  "position": 2,
+                  "text": "@RequestParam",
+                  "correct": false
+                },
+                {
+                  "position": 3,
+                  "text": "@PathVariable",
+                  "correct": true
+                },
+                {
+                  "position": 4,
+                  "text": "@ResponseStatus",
+                  "correct": false
+                }
+              ]
+            },
+            {
+              "position": 3,
+              "statement": "Para a URL /api/quizzes?topicId=7, qual anotação é apropriada para receber topicId como parâmetro de consulta no método do controller?",
+              "studyGuidance": "Compare @RequestParam para parâmetros de consulta com @PathVariable para valores capturados do caminho da URL.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {
+                  "position": 1,
+                  "text": "@RequestParam",
+                  "correct": true
+                },
+                {
+                  "position": 2,
+                  "text": "@PathVariable",
+                  "correct": false
+                },
+                {
+                  "position": 3,
+                  "text": "@RequestMapping",
+                  "correct": false
+                },
+                {
+                  "position": 4,
+                  "text": "@Entity",
+                  "correct": false
+                }
+              ]
+            },
+            {
+              "position": 4,
+              "statement": "Um endpoint POST recebe JSON no corpo da requisição e deve convertê-lo para um DTO Java. Qual anotação do parâmetro informa ao Spring Web para ler e converter esse corpo?",
+              "studyGuidance": "Revise @RequestBody e a conversão de mensagens HTTP. @Valid pode ser combinada com o DTO quando a entrada também precisa de validação.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {
+                  "position": 1,
+                  "text": "@ModelAttribute apenas, porque o Spring Web não converte JSON.",
+                  "correct": false
+                },
+                {
+                  "position": 2,
+                  "text": "@PathVariable",
+                  "correct": false
+                },
+                {
+                  "position": 3,
+                  "text": "@ResponseBody",
+                  "correct": false
+                },
+                {
+                  "position": 4,
+                  "text": "@RequestBody",
+                  "correct": true
+                }
+              ]
+            },
+            {
+              "position": 5,
+              "statement": "Uma API precisa tratar de forma centralizada erros lançados por vários controllers REST e devolver respostas HTTP consistentes. Qual recurso Spring MVC é apropriado?",
+              "studyGuidance": "Revise @ControllerAdvice, @RestControllerAdvice e métodos anotados com @ExceptionHandler para tratamento global de erros.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {
+                  "position": 1,
+                  "text": "@RestControllerAdvice com métodos @ExceptionHandler.",
+                  "correct": true
+                },
+                {
+                  "position": 2,
+                  "text": "@EntityListeners em cada entidade JPA.",
+                  "correct": false
+                },
+                {
+                  "position": 3,
+                  "text": "@RepositoryRestResource em todo service.",
+                  "correct": false
+                },
+                {
+                  "position": 4,
+                  "text": "@ConfigurationProperties no método main.",
+                  "correct": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

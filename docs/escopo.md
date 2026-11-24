@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Apoiar alunos de Desenvolvimento de Servidores II em Java, orientação a objetos, Reflection, Servlets, Spring, Spring Boot Web e JPA. A aplicação combina tópicos de estudo, quizzes de múltipla escolha e um tutor conversacional contextualizado por questão.
+Apoiar alunos de Desenvolvimento de Servidores II em Java, orientação a objetos, Reflection, Servlets, Spring Framework, Spring Web MVC, Spring Boot e JPA. O catálogo trata Spring Web e Spring Boot como tópicos distintos: Spring Web aborda a camada HTTP/MVC e APIs REST; Spring Boot aborda a configuração e a execução da aplicação. A aplicação combina esses tópicos de estudo, quizzes de múltipla escolha e um tutor conversacional contextualizado por questão.
 
 ## Jornada principal
 
@@ -23,7 +23,7 @@ As regras de acesso serão aplicadas pelos serviços com a identidade da sessão
 
 ## Arquitetura prevista
 
-Aplicação monolítica Spring Boot com páginas Thymeleaf e API REST. Controllers recebem requests e DTOs; Services aplicam autorização, validação, montagem do contexto e transações; repositories Spring Data JPA persistem o domínio. OpenRouter é acessado por adapter no backend. A chamada externa ocorre fora de uma transação longa; mensagens idempotentes guardam estado e instante de início do processamento, permitindo recuperar tentativas que ficaram presas.
+Aplicação monolítica Spring Boot, usando Spring Web MVC para receber requisições HTTP, expor a API REST e integrar os controllers das páginas Thymeleaf. Controllers recebem requests e DTOs; Services aplicam autorização, validação, montagem do contexto e transações; repositories Spring Data JPA persistem o domínio. OpenRouter é acessado por adapter no backend. A chamada externa ocorre fora de uma transação longa; mensagens idempotentes guardam estado e instante de início do processamento, permitindo recuperar tentativas que ficaram presas.
 
 PostgreSQL será hospedado no Supabase. O schema é aplicado por Flyway; a conexão depende de variáveis locais/de ambiente. O acesso ao Supabase e as credenciais OpenRouter serão fornecidos depois. Nenhum comando de migration será executado no banco do grupo sem acesso e revisão.
 

@@ -7,7 +7,7 @@ As respostas da IA terão um tom descontraído inspirado na forma de explicar e 
 ## Tecnologias
 
 - Java 17 e Spring Boot
-- Spring MVC, Spring Data JPA e Hibernate
+- Spring Web (Spring MVC), Spring Data JPA e Hibernate
 - PostgreSQL hospedado no Supabase
 - Thymeleaf para a interface web
 - Flyway para migrations versionadas
@@ -34,7 +34,7 @@ Administradores criam e atualizam tópicos e quizzes em `/api/admin/topics` e `/
 
 A leitura do aluno parte de `GET /api/topics`, passa por `GET /api/topics/{topicId}/quizzes` e termina em `GET /api/quizzes/{quizId}/questions`. O histórico usa `GET /api/attempts/{attemptId}/questions/{questionId}` com a sessão do dono da tentativa. O gabarito é usado na correção do servidor. No chat, o tutor recebe a alternativa escolhida e o resultado daquela tentativa, sem receber os marcadores de correção das demais opções. Apenas a administração autenticada tem acesso a esses marcadores ao editar alternativas.
 
-Para carregar o catálogo inicial com quizzes de POO, Anotações, Reflection, Spring Boot e JPA, defina `CATALOG_IMPORT_RESOURCE=classpath:catalog/dsii-fundamentos-v1.json` ao iniciar a aplicação. O exemplo menor de injeção de dependência usado nos testes do grupo continua em `classpath:catalog/spring-ioc.json`. Para material externo, use `file:/caminho/catalogo.json` com o mesmo formato e uma origem versionada no campo `source`. A importação é transacional e registra a origem e o SHA-256 dos bytes do arquivo. Reexecutar o mesmo lote preserva os IDs. Um arquivo diferente com a mesma origem é recusado. Fontes e escopo do catálogo estão em [docs/catalogo-inicial-fontes.md](docs/catalogo-inicial-fontes.md).
+O catálogo inicial tem quizzes separados de POO, Anotações, Reflection, Spring Boot, JPA e Spring Web (Spring MVC). A base original, com os cinco primeiros tópicos, usa `CATALOG_IMPORT_RESOURCE=classpath:catalog/dsii-fundamentos-v1.json`; o tópico complementar de Spring Web usa `classpath:catalog/spring-web-v1.json`. Como a configuração importa um arquivo por inicialização, em um banco novo carregue primeiro a base e depois reinicie a aplicação apontando para o complemento. Em um banco que já recebeu a base, carregue somente o complemento; depois remova `CATALOG_IMPORT_RESOURCE` da configuração normal. O importador registra a origem e o SHA-256, preserva IDs ao repetir o mesmo lote e recusa conteúdo diferente com a mesma origem. O exemplo menor de injeção de dependência usado nos testes do grupo continua em `classpath:catalog/spring-ioc.json`. Para material externo, use `file:/caminho/catalogo.json` com o mesmo formato e uma origem versionada no campo `source`. Fontes e escopo do catálogo estão em [docs/catalogo-inicial-fontes.md](docs/catalogo-inicial-fontes.md).
 
 ## Execução local
 
