@@ -1,0 +1,420 @@
+{
+  "source": "modo-tangente-dsii@catalogo-dsii-fundamentos-v1",
+  "topics": [
+    {
+      "topic": {
+        "title": "Programação Orientada a Objetos em Java",
+        "description": "Classes, objetos, encapsulamento, abstração, herança, composição e polimorfismo em Java.",
+        "displayOrder": 1,
+        "active": true
+      },
+      "quizzes": [
+        {
+          "title": "Fundamentos de POO em Java",
+          "description": "Conceitos de orientação a objetos aplicados à modelagem de classes Java.",
+          "instructions": "Escolha uma alternativa por questão. Considere os conceitos da linguagem Java e prefira a opção que melhor descreve o comportamento apresentado.",
+          "displayOrder": 1,
+          "questions": [
+            {
+              "position": 1,
+              "statement": "Em Java, qual afirmação diferencia corretamente uma classe de um objeto?",
+              "studyGuidance": "Revise classe como definição de estado e comportamento e objeto como instância concreta criada a partir dessa definição.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "Uma classe é uma instância em memória; um objeto é o código-fonte que a descreve.", "correct": false},
+                {"position": 2, "text": "Uma classe define uma estrutura; um objeto é uma instância dessa classe.", "correct": true},
+                {"position": 3, "text": "Classe e objeto são sinônimos e sempre representam o mesmo elemento.", "correct": false},
+                {"position": 4, "text": "Um objeto define os tipos que podem ser usados para declarar uma classe.", "correct": false}
+              ]
+            },
+            {
+              "position": 2,
+              "statement": "Uma classe mantém seu saldo em um campo privado e oferece métodos públicos depositar e consultarSaldo. Qual conceito é aplicado principalmente?",
+              "studyGuidance": "Revise encapsulamento, modificadores de acesso e controle de alterações sobre o estado interno do objeto.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "Encapsulamento, pois o acesso ao estado é controlado pela própria classe.", "correct": true},
+                {"position": 2, "text": "Herança, pois todo método público cria automaticamente uma subclasse.", "correct": false},
+                {"position": 3, "text": "Sobrecarga, pois todos os campos privados recebem valores diferentes.", "correct": false},
+                {"position": 4, "text": "Reflexão, pois um método público é sempre executado por introspecção.", "correct": false}
+              ]
+            },
+            {
+              "position": 3,
+              "statement": "Considere uma interface Notificavel com o método enviar(String texto), implementada por Email e Sms. Um serviço recebe uma referência do tipo Notificavel e chama enviar. Qual conceito permite que a implementação concreta determine o comportamento executado?",
+              "studyGuidance": "Revise subtipagem por interfaces, sobrescrita de métodos e despacho dinâmico em Java.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "Conversão automática de qualquer classe para a classe Object.", "correct": false},
+                {"position": 2, "text": "Encapsulamento de todos os métodos da interface.", "correct": false},
+                {"position": 3, "text": "Polimorfismo: a referência usa o contrato e a implementação concreta fornece o comportamento.", "correct": true},
+                {"position": 4, "text": "Sobrecarga de construtores, mesmo sem existir construtor no serviço.", "correct": false}
+              ]
+            },
+            {
+              "position": 4,
+              "statement": "Considere `class Cachorro extends Animal`. O que essa declaração representa?",
+              "studyGuidance": "Revise `extends` para herança entre classes e `implements` para implementação de interfaces.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "Cachorro implementa uma interface chamada Animal.", "correct": false},
+                {"position": 2, "text": "Animal passa a ser uma instância de Cachorro.", "correct": false},
+                {"position": 3, "text": "Cachorro é uma subclasse de Animal e herda os membros que podem ser herdados.", "correct": true},
+                {"position": 4, "text": "Cachorro copia o código-fonte de Animal e deixa de ter relação com ela.", "correct": false}
+              ]
+            },
+            {
+              "position": 5,
+              "statement": "Uma subclasse sobrescreve o método calcular() de sua superclasse. Uma variável declarada com o tipo da superclasse referencia uma instância da subclasse. Qual implementação é chamada quando calcular() é invocado?",
+              "studyGuidance": "Revise sobrescrita de métodos e despacho dinâmico; diferencie sobrescrita de sobrecarga resolvida pela assinatura.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "Sempre a implementação da superclasse, porque o tipo da variável controla a chamada em tempo de execução.", "correct": false},
+                {"position": 2, "text": "Nenhuma implementação, pois uma referência da superclasse não pode apontar para uma subclasse.", "correct": false},
+                {"position": 3, "text": "A implementação da subclasse, por despacho dinâmico do método sobrescrito.", "correct": true},
+                {"position": 4, "text": "A implementação escolhida aleatoriamente pelo compilador.", "correct": false}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": {
+        "title": "Anotações em Java",
+        "description": "Uso de anotações, meta-anotações, alvos e políticas de retenção na linguagem Java.",
+        "displayOrder": 2,
+        "active": true
+      },
+      "quizzes": [
+        {
+          "title": "Anotações e metadados",
+          "description": "Sintaxe e funcionamento de anotações padrão e personalizadas.",
+          "instructions": "Escolha uma alternativa por questão. Observe se a pergunta trata de compilação, armazenamento no bytecode ou leitura em tempo de execução.",
+          "displayOrder": 1,
+          "questions": [
+            {
+              "position": 1,
+              "statement": "Qual é a função geral de uma anotação em Java?",
+              "studyGuidance": "Revise anotações como metadados associados a elementos do programa e os usos feitos por compiladores, ferramentas e frameworks.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "Armazenar metadados que podem ser processados por ferramentas ou pelo programa, conforme sua definição.", "correct": true},
+                {"position": 2, "text": "Substituir obrigatoriamente todo método da classe anotada por código gerado.", "correct": false},
+                {"position": 3, "text": "Criar uma instância da classe anotada durante a compilação.", "correct": false},
+                {"position": 4, "text": "Impedir que o compilador verifique o tipo dos elementos anotados.", "correct": false}
+              ]
+            },
+            {
+              "position": 2,
+              "statement": "Ao criar uma anotação personalizada, qual meta-anotação limita os locais em que ela pode ser aplicada, como classes, métodos ou campos?",
+              "studyGuidance": "Revise as meta-anotações de java.lang.annotation e o papel de ElementType na declaração de alvos permitidos.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "@Retention", "correct": false},
+                {"position": 2, "text": "@Inherited", "correct": false},
+                {"position": 3, "text": "@Target", "correct": true},
+                {"position": 4, "text": "@Documented", "correct": false}
+              ]
+            },
+            {
+              "position": 3,
+              "statement": "Uma anotação personalizada não declara explicitamente @Retention. Qual política de retenção é aplicada por padrão?",
+              "studyGuidance": "Revise a política padrão especificada para declarações de tipos de anotação e o que CLASS significa para a JVM.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "SOURCE", "correct": false},
+                {"position": 2, "text": "RUNTIME", "correct": false},
+                {"position": 3, "text": "Nenhuma política; a declaração não compila.", "correct": false},
+                {"position": 4, "text": "CLASS", "correct": true}
+              ]
+            },
+            {
+              "position": 4,
+              "statement": "Um framework precisa consultar uma anotação personalizada em uma classe por meio de reflexão durante a execução. Qual política de retenção deve ser declarada?",
+              "studyGuidance": "Revise a diferença entre SOURCE, CLASS e RUNTIME e quais anotações podem ser encontradas por reflexão em tempo de execução.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "RUNTIME", "correct": true},
+                {"position": 2, "text": "SOURCE", "correct": false},
+                {"position": 3, "text": "CLASS, pois essa política sempre é visível pela API de reflexão.", "correct": false},
+                {"position": 4, "text": "@Target, pois ela controla por quanto tempo a anotação existe.", "correct": false}
+              ]
+            },
+            {
+              "position": 5,
+              "statement": "Uma annotation personalizada está marcada com @Retention(RUNTIME) e @Inherited e foi aplicada à classe Base, mas não à subclasse Filha. Ao consultar essa annotation em Filha por reflexão, qual comportamento @Inherited define?",
+              "studyGuidance": "Revise o escopo restrito de @Inherited: consulta em declarações de classe e herança pela cadeia de superclasses.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "A anotação é copiada para todos os métodos e campos das subclasses.", "correct": false},
+                {"position": 2, "text": "A anotação pode ser encontrada em subclasses ao consultar classes, seguindo a cadeia de superclasses; isso não se aplica a métodos ou interfaces implementadas.", "correct": true},
+                {"position": 3, "text": "A anotação passa a ser herdada por qualquer interface implementada pela classe.", "correct": false},
+                {"position": 4, "text": "A anotação fica disponível em tempo de execução mesmo que tenha retenção SOURCE.", "correct": false}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": {
+        "title": "Reflection em Java",
+        "description": "Inspeção de classes, métodos, campos e anotações durante a execução usando a API de reflexão.",
+        "displayOrder": 3,
+        "active": true
+      },
+      "quizzes": [
+        {
+          "title": "Inspeção dinâmica com Reflection",
+          "description": "Operações básicas da API java.lang.reflect e seus limites.",
+          "instructions": "Escolha uma alternativa por questão. Considere a diferença entre membros declarados, membros públicos herdados e acesso permitido pela linguagem e pelo módulo.",
+          "displayOrder": 1,
+          "questions": [
+            {
+              "position": 1,
+              "statement": "Qual afirmação descreve Class.getDeclaredMethods()?",
+              "studyGuidance": "Compare getDeclaredMethods() com getMethods(), considerando visibilidade e métodos herdados.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "Retorna somente métodos públicos herdados e declarados.", "correct": false},
+                {"position": 2, "text": "Retorna os métodos declarados diretamente na classe, inclusive não públicos, sem incluir os herdados.", "correct": true},
+                {"position": 3, "text": "Retorna somente os construtores públicos da classe.", "correct": false},
+                {"position": 4, "text": "Retorna apenas métodos abstratos definidos em interfaces.", "correct": false}
+              ]
+            },
+            {
+              "position": 2,
+              "statement": "Qual afirmação descreve Class.getMethods()?",
+              "studyGuidance": "Revise que getMethods() seleciona métodos públicos e inclui os herdados de superclasses e superinterfaces.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "Retorna todos os métodos declarados diretamente, inclusive privados, mas não herdados.", "correct": false},
+                {"position": 2, "text": "Retorna campos públicos da classe e de seus ancestrais.", "correct": false},
+                {"position": 3, "text": "Retorna métodos públicos declarados e herdados da classe ou interface.", "correct": true},
+                {"position": 4, "text": "Retorna apenas métodos estáticos definidos na classe atual.", "correct": false}
+              ]
+            },
+            {
+              "position": 3,
+              "statement": "Uma variável Object referencia uma instância de ArrayList. Qual expressão fornece o objeto Class correspondente ao tipo real da instância durante a execução?",
+              "studyGuidance": "Revise o método Object.getClass() e a diferença entre tipo declarado da variável e classe concreta da instância.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "objeto.getClass()", "correct": true},
+                {"position": 2, "text": "Object.getSuperclass()", "correct": false},
+                {"position": 3, "text": "Class.newInstance(objeto)", "correct": false},
+                {"position": 4, "text": "objeto.getDeclaredMethods()", "correct": false}
+              ]
+            },
+            {
+              "position": 4,
+              "statement": "Depois de localizar um método não estático por reflexão, qual operação invoca esse método sobre uma instância alvo?",
+              "studyGuidance": "Revise Method.invoke(), seus argumentos para alvo e parâmetros, e as exceções relacionadas à chamada reflexiva.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "Method.invoke(alvo, argumentos)", "correct": true},
+                {"position": 2, "text": "Class.forName(alvo, argumentos)", "correct": false},
+                {"position": 3, "text": "Field.getDeclaredMethod(alvo)", "correct": false},
+                {"position": 4, "text": "Annotation.getRetention(alvo)", "correct": false}
+              ]
+            },
+            {
+              "position": 5,
+              "statement": "Uma aplicação tenta localizar em tempo de execução uma anotação personalizada usando a API de reflexão. Qual condição é necessária para que ela esteja disponível nessa consulta?",
+              "studyGuidance": "Relacione reflexão sobre anotações com @Retention(RetentionPolicy.RUNTIME).",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "A anotação deve estar marcada com @Inherited, independentemente da retenção.", "correct": false},
+                {"position": 2, "text": "A anotação deve ter retenção RUNTIME.", "correct": true},
+                {"position": 3, "text": "A anotação deve ser aplicada somente a campos públicos.", "correct": false},
+                {"position": 4, "text": "A classe deve implementar Serializable.", "correct": false}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": {
+        "title": "Spring Boot",
+        "description": "Inicialização de aplicações Spring, descoberta de componentes, auto-configuração e configuração externa.",
+        "displayOrder": 4,
+        "active": true
+      },
+      "quizzes": [
+        {
+          "title": "Aplicações com Spring Boot",
+          "description": "Conceitos introdutórios de configuração e organização de aplicações Spring Boot.",
+          "instructions": "Escolha uma alternativa por questão. Considere práticas usuais do Spring Boot 3.x e a separação entre configuração, componentes e dependências.",
+          "displayOrder": 1,
+          "questions": [
+            {
+              "position": 1,
+              "statement": "Em uma aplicação Spring Boot, quais recursos são habilitados conjuntamente por @SpringBootApplication em seu uso padrão?",
+              "studyGuidance": "Revise as meta-anotações que compõem @SpringBootApplication: configuração, auto-configuração e varredura de componentes.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "@SpringBootConfiguration, @EnableAutoConfiguration e @ComponentScan.", "correct": true},
+                {"position": 2, "text": "@Entity, @Repository e @Transactional.", "correct": false},
+                {"position": 3, "text": "@RestController, @RequestMapping e @Autowired.", "correct": false},
+                {"position": 4, "text": "@ConfigurationProperties, @Bean e @Profile.", "correct": false}
+              ]
+            },
+            {
+              "position": 2,
+              "statement": "Por padrão, em qual região do código o component scan iniciado por @SpringBootApplication procura componentes?",
+              "studyGuidance": "Revise o pacote da classe principal como pacote-base e a recomendação de manter a classe principal em um pacote raiz acima dos componentes.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "Em todos os pacotes de todas as dependências disponíveis no classpath, sem considerar o pacote da aplicação.", "correct": false},
+                {"position": 2, "text": "No pacote da classe anotada e, por padrão, nos seus subpacotes.", "correct": true},
+                {"position": 3, "text": "Somente no pacote java.lang.", "correct": false},
+                {"position": 4, "text": "Apenas nas classes explicitamente listadas em application.properties.", "correct": false}
+              ]
+            },
+            {
+              "position": 3,
+              "statement": "Qual é o papel geral da auto-configuração do Spring Boot?",
+              "studyGuidance": "Revise como a auto-configuração registra configurações com base nas dependências, nos beans existentes e nas propriedades, permitindo customização pela aplicação.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "Gerar automaticamente todas as entidades e regras de negócio da aplicação.", "correct": false},
+                {"position": 2, "text": "Substituir o código da aplicação por uma configuração fixa que não pode ser customizada.", "correct": false},
+                {"position": 3, "text": "Aplicar configurações prováveis com base no ambiente e nas dependências, que podem ser ajustadas pela aplicação.", "correct": true},
+                {"position": 4, "text": "Transformar toda classe Java em controller HTTP.", "correct": false}
+              ]
+            },
+            {
+              "position": 4,
+              "statement": "Uma classe de serviço recebe uma dependência obrigatória por meio de seu único construtor. Qual afirmação é correta no Spring Framework atual?",
+              "studyGuidance": "Revise injeção por construtor e o comportamento do Spring quando existe um único construtor candidato.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "A dependência precisa obrigatoriamente ser obtida com uma chamada estática ao ApplicationContext.", "correct": false},
+                {"position": 2, "text": "É possível usar injeção pelo construtor; quando existe um único construtor, @Autowired não é necessário para selecioná-lo.", "correct": true},
+                {"position": 3, "text": "O Spring ignora construtores e injeta apenas em campos públicos.", "correct": false},
+                {"position": 4, "text": "A classe deve herdar de Thread para receber dependências.", "correct": false}
+              ]
+            },
+            {
+              "position": 5,
+              "statement": "Uma aplicação possui várias propriedades relacionadas sob o prefixo app.integracao. Qual recurso é apropriado para agrupá-las em um objeto de configuração tipado?",
+              "studyGuidance": "Revise @ConfigurationProperties, prefixos de propriedades externas e o registro necessário da classe de configuração.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "@ConfigurationProperties com o prefixo correspondente, registrando a classe para binding pelo Spring Boot.", "correct": true},
+                {"position": 2, "text": "@ManyToOne, pois todo grupo de propriedades representa uma relação JPA.", "correct": false},
+                {"position": 3, "text": "@Override, pois cada propriedade sobrescreve automaticamente uma variável Java.", "correct": false},
+                {"position": 4, "text": "@SpringBootApplication em cada campo da classe.", "correct": false}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": {
+        "title": "JPA e Persistência",
+        "description": "Mapeamento objeto-relacional com Jakarta Persistence: entidades, contexto de persistência e relacionamentos.",
+        "displayOrder": 5,
+        "active": true
+      },
+      "quizzes": [
+        {
+          "title": "Entidades e relacionamentos com JPA",
+          "description": "Conceitos fundamentais de entidades JPA, EntityManager e associações entre entidades.",
+              "instructions": "Escolha uma alternativa por questão. Considere Jakarta Persistence 3.1, versão gerenciada pelo Spring Boot 3.5. Diferencie o comportamento exigido pela especificação de detalhes específicos de cada provedor.",
+          "displayOrder": 1,
+          "questions": [
+            {
+              "position": 1,
+              "statement": "Qual combinação caracteriza uma classe persistente como entidade JPA?",
+              "studyGuidance": "Revise a anotação @Entity, o identificador da entidade e os requisitos básicos da classe persistente.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "A classe é anotada com @Entity e declara um identificador persistente, normalmente com @Id.", "correct": true},
+                {"position": 2, "text": "A classe implementa obrigatoriamente java.io.Serializable e não possui identificador.", "correct": false},
+                {"position": 3, "text": "A classe é anotada somente com @Repository.", "correct": false},
+                {"position": 4, "text": "A classe deve estender EntityManager para ser descoberta pelo provedor.", "correct": false}
+              ]
+            },
+            {
+              "position": 2,
+              "statement": "O que acontece com uma entidade nova quando EntityManager.persist(entidade) é chamado em um contexto de persistência com uma transação ativa?",
+              "studyGuidance": "Revise os estados new, managed, detached e removed, além da sincronização do contexto de persistência com o banco.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "A entidade se torna gerenciada no contexto de persistência; a sincronização física pode ocorrer em flush ou commit.", "correct": true},
+                {"position": 2, "text": "A entidade é removida imediatamente do banco.", "correct": false},
+                {"position": 3, "text": "A entidade se torna detached e deixa de ser acompanhada pelo EntityManager.", "correct": false},
+                {"position": 4, "text": "A entidade é convertida em uma consulta JPQL e não pode mais ser alterada.", "correct": false}
+              ]
+            },
+            {
+              "position": 3,
+              "statement": "Uma entidade detached é passada a EntityManager.merge(entidade). Qual descrição representa corretamente o resultado da operação?",
+              "studyGuidance": "Revise que merge copia o estado para uma instância gerenciada e retorna essa instância, que pode ter identidade Java diferente do objeto recebido.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "O objeto recebido torna-se sempre managed e é sempre a mesma instância retornada.", "correct": false},
+                {"position": 2, "text": "O estado é copiado para uma instância gerenciada; deve-se usar o objeto retornado por merge para continuar trabalhando com essa instância.", "correct": true},
+                {"position": 3, "text": "A operação apaga a entidade e todos os seus relacionamentos.", "correct": false},
+                {"position": 4, "text": "A operação atualiza o banco imediatamente e encerra a transação.", "correct": false}
+              ]
+            },
+            {
+              "position": 4,
+              "statement": "Segundo Jakarta Persistence, qual é a estratégia de carregamento padrão de uma associação @ManyToOne quando fetch não é informado?",
+              "studyGuidance": "Revise o valor padrão de fetch de ManyToOne e a diferença entre exigência EAGER e indicação LAZY na especificação.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "LAZY; a entidade associada nunca pode ser carregada antes do acesso.", "correct": false},
+                {"position": 2, "text": "AUTO; o provedor deve escolher sem regra especificada.", "correct": false},
+                {"position": 3, "text": "EAGER; o provedor deve garantir que a associação esteja carregada eagermente.", "correct": true},
+                {"position": 4, "text": "NONE; a associação não participa do mapeamento.", "correct": false}
+              ]
+            },
+            {
+              "position": 5,
+              "statement": "Em uma associação bidirecional @OneToMany/@ManyToOne, qual lado é o proprietário da relação segundo a especificação JPA?",
+              "studyGuidance": "Revise o lado proprietário, a chave estrangeira e o uso de mappedBy no lado inverso da associação bidirecional.",
+              "points": 1,
+              "active": true,
+              "options": [
+                {"position": 1, "text": "O lado @OneToMany é sempre o proprietário e deve declarar mappedBy.", "correct": false},
+                {"position": 2, "text": "Ambos os lados são proprietários simultaneamente, sem configuração adicional.", "correct": false},
+                {"position": 3, "text": "O lado @ManyToOne é o proprietário; o lado @OneToMany pode apontar para ele usando mappedBy.", "correct": true},
+                {"position": 4, "text": "O EntityManager escolhe um lado aleatório a cada transação.", "correct": false}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
