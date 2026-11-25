@@ -2,12 +2,25 @@ openapi: 3.0.3
 info:
   title: Modo Tangente API
   version: 0.6.0
-  description: Catálogo didático, sessão, tentativas, respostas, conversas e mensagens. A administração exige uma conta ADMIN ativa.
+  description: >-
+    API REST do Modo Tangente para sessão, catálogo, tentativas, respostas, conversas,
+    mensagens e saúde da aplicação. As rotas /cadastro e /login são páginas/formulários
+    HTML e não fazem parte desta API. A administração exige uma conta ADMIN ativa.
 servers:
   - url: /
 security:
   - sessionCookie: []
 paths:
+  /actuator/health:
+    get:
+      security: []
+      summary: Consulta a saúde da aplicação
+      responses:
+        '200':
+          description: Aplicação disponível
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HealthView' }
   /api/admin/topics:
     get:
       summary: Lista tópicos para administração
@@ -351,6 +364,21 @@ paths:
           description: Usuário não autenticado ou conta inativa
         '404':
           description: Tentativa inexistente ou pertencente a outro usuário
+  /api/attempts:
+    get:
+      operationId: listQuizAttempts
+      summary: Lista as tentativas da sessão atual
+      responses:
+        '200':
+          description: Tentativas do usuário autenticado, da mais recente para a mais antiga
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuizAttemptSummary'
+        '401':
+          description: Usuário não autenticado ou conta inativa
   /api/attempts/{attemptId}/questions/{questionId}/answer:
     post:
       operationId: answerAttemptQuestion
@@ -539,15 +567,23 @@ components:
       type: apiKey
       in: cookie
       name: JSESSIONID
+      description: Sessão criada pelo login por formulário. A sessão autenticada no mesmo navegador é enviada automaticamente ao Swagger UI.
   parameters:
     CsrfToken:
       name: X-CSRF-TOKEN
       in: header
       required: true
-      description: Token CSRF associado à sessão Spring Security.
+      description: Token CSRF associado à sessão Spring Security. Para chamadas de escrita no Swagger UI, copie o token de uma página autenticada do sistema.
       schema:
         type: string
   schemas:
+    HealthView:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [UP, DOWN, OUT_OF_SERVICE, UNKNOWN]
     TopicData:
       type: object
       required: [title, displayOrder, active]

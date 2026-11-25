@@ -70,4 +70,5 @@ $env:SPRING_PROFILES_ACTIVE = "supabase"
 - Escopo e comportamento: [docs/escopo.md](docs/escopo.md)
 - Migrations: [src/main/resources/db/migration](src/main/resources/db/migration)
 - API OpenAPI: [docs/openapi.yaml](docs/openapi.yaml)
+- Swagger UI local: abra `/swagger-ui/index.html` com a aplicação iniciada. A interface usa a especificação OpenAPI do repositório; operações de escrita exigem sessão autenticada e token CSRF.
 - Aplicação publicada: a definir
