@@ -7,6 +7,7 @@
     <h1>Entrar no Modo Tangente</h1>
     <p class="feedback feedback-error" th:if="${param.error != null}" role="alert">Confira o e-mail e a senha.</p>
     <p class="feedback" th:if="${param.logout != null}" role="status">Você saiu da sua conta.</p>
+    <p class="feedback feedback-success" th:if="${param.registered != null}" role="status">Conta criada. Entre com seu e-mail e senha.</p>
     <form class="login-form" method="post" th:action="@{/login}">
         <div>
             <label for="email">E-mail</label>
@@ -18,6 +19,7 @@
         </div>
         <button class="button" type="submit">Entrar</button>
     </form>
+    <p class="auth-switch">Ainda não tem conta? <a th:href="@{/cadastro}">Criar cadastro</a></p>
 </section>
 </body>
 </html>

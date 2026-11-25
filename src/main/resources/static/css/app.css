@@ -128,6 +128,38 @@ a {
     color: inherit;
 }
 
+.field-hint,
+.field-error {
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.field-hint {
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+.field-error {
+    color: #8c2b21;
+    font-size: 0.875rem;
+}
+
+.auth-switch {
+    margin: 1.25rem 0 0;
+    color: var(--muted);
+}
+
+.entry-card .home-course {
+    color: var(--accent);
+    font-size: 0.9rem;
+}
+
+.entry-actions {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
 .button {
     border-color: transparent;
     background: var(--accent);

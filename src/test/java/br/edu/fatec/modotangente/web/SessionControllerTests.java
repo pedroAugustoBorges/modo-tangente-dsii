@@ -29,7 +29,6 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -59,10 +58,11 @@ class SessionControllerTests {
     @MockitoBean private QuizContextProvider contextProvider;
 
     @Test
-    void redirectsGuestsAndRendersTheEmailLoginForm() throws Exception {
+    void showsGuestsThePublicEntryScreenAndEmailLoginForm() throws Exception {
         mockMvc.perform(get("/"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(header().string("Location", endsWith("/login")));
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("href=\"/login\"")))
+                .andExpect(content().string(containsString("href=\"/cadastro\"")));
 
         mockMvc.perform(get("/login"))
                 .andExpect(status().isOk())

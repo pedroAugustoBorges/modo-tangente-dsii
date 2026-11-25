@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Bem-vindo', ~{:: corpo}, false)}">
+<body>
+<section class="surface login-card entry-card" th:fragment="corpo">
+    <div class="login-mark" aria-hidden="true">↗</div>
+    <p class="home-course">Desenvolvimento de Servidores II</p>
+    <h1>Aprenda no seu ritmo.</h1>
+    <p class="muted">Pratique com quizzes e converse com o tutor sobre cada questão.</p>
+    <div class="entry-actions">
+        <a class="button" th:href="@{/login}">Entrar</a>
+        <a class="button button-secondary" th:href="@{/cadastro}">Criar minha conta</a>
+    </div>
+</section>
+</body>
+</html>

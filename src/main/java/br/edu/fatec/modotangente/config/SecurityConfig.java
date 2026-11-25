@@ -18,7 +18,7 @@ public class SecurityConfig {
         return http
                 .authorizeHttpRequests(authorize -> authorize
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                        .requestMatchers("/actuator/health", "/css/**").permitAll()
+                        .requestMatchers("/", "/actuator/health", "/css/**", "/login", "/cadastro").permitAll()
                         .requestMatchers("/admin", "/admin/**", "/api/admin", "/api/admin/**")
                         .access((authentication, context) ->
                                 new AuthorizationDecision(users.isActiveAdmin(authentication.get())))

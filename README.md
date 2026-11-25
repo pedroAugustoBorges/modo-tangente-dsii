@@ -26,6 +26,8 @@ O Spring Security autentica as contas do Modo Tangente armazenadas no PostgreSQL
 
 O projeto contém as entidades de estudo e o registro de importações, as migrations Flyway V1 a V4 e as APIs de catálogo, tentativas, respostas, conversas e mensagens. O login usa `AppUser`, senhas com BCrypt e os perfis `STUDENT` e `ADMIN`. A sessão pode ser consultada em `GET /api/me`. Login, início, catálogo e questão usam o layout Thymeleaf compartilhado.
 
+A tela pública inicial oferece acesso ao login e ao cadastro. Novas contas são criadas com o perfil `STUDENT`, e as senhas são armazenadas com BCrypt. Contas administrativas continuam sendo provisionadas separadamente.
+
 O catálogo fornece as questões publicadas para novas tentativas e o contexto persistido para o tutor. O aluno pode acessar tópicos, iniciar e retomar tentativas, enviar respostas e consultar o chat por questão nas telas de estudo. As páginas administrativas e a publicação ainda estão pendentes.
 
 ## Catálogo

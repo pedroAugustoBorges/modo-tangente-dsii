@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Criar conta', ~{:: corpo}, false)}">
+<body>
+<section class="surface login-card" th:fragment="corpo">
+    <div class="login-mark" aria-hidden="true">↗</div>
+    <h1>Criar sua conta</h1>
+    <p class="muted">Cadastre-se para acessar os quizzes e acompanhar seus estudos.</p>
+    <form class="login-form" method="post" th:action="@{/cadastro}" th:object="${form}">
+        <div>
+            <label for="fullName">Nome</label>
+            <input id="fullName" th:field="*{fullName}" type="text" autocomplete="name" maxlength="120" required>
+            <small class="field-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></small>
+        </div>
+        <div>
+            <label for="email">E-mail</label>
+            <input id="email" th:field="*{email}" type="email" autocomplete="email" maxlength="254" required>
+            <small class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+        </div>
+        <div>
+            <label for="password">Senha</label>
+            <input id="password" th:field="*{password}" type="password" autocomplete="new-password" minlength="8" maxlength="72" required>
+            <small class="field-hint">Use pelo menos 8 caracteres.</small>
+            <small class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></small>
+        </div>
+        <button class="button" type="submit">Criar conta</button>
+    </form>
+    <p class="auth-switch">Já tem uma conta? <a th:href="@{/login}">Entrar</a></p>
+</section>
+</body>
+</html>
