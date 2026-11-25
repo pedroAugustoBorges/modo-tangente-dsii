@@ -5,16 +5,28 @@
 <th:block th:fragment="corpo">
     <section th:replace="~{estudo/pagina :: pagina(${titulo}, ~{:: lista})}">
         <div th:fragment="lista">
+            <a class="study-back" th:if="${voltar}" th:href="@{${voltar}}" data-study-nav="back" data-study-part>
+                <span class="study-back-arrow" aria-hidden="true">←</span>
+                Voltar aos tópicos
+            </a>
             <p class="feedback feedback-error" th:if="${erro}" role="alert" th:text="${erro}">Não foi possível carregar o catálogo.</p>
             <th:block th:unless="${erro}">
                 <p class="empty-state" th:if="${#lists.isEmpty(itens)}" th:text="${mensagemVazia}">Nenhum item disponível.</p>
                 <ul class="catalog-list" th:unless="${#lists.isEmpty(itens)}">
-                    <li th:each="item : ${itens}">
-                        <a th:href="@{${item.url}}"><span th:text="${item.titulo}">Título</span><span class="list-arrow" aria-hidden="true">→</span></a>
+                    <li th:each="item : ${itens}" data-study-part>
+                        <form th:if="${abrirTopico}" method="post" th:action="@{${item.url}}" data-study-nav="forward">
+                            <button class="topic-entry" type="submit">
+                                <span th:text="${item.titulo}">Tópico</span>
+                                <span class="list-arrow" aria-hidden="true">→</span>
+                            </button>
+                        </form>
+                        <a th:unless="${abrirTopico}" th:href="@{${item.url}}" data-study-nav="forward">
+                            <span th:text="${item.titulo}">Título</span>
+                            <span class="list-arrow" aria-hidden="true">→</span>
+                        </a>
                     </li>
                 </ul>
             </th:block>
-            <p class="section-back" th:if="${voltar}"><a th:href="@{${voltar}}">Voltar aos tópicos</a></p>
         </div>
     </section>
 </th:block>

@@ -1,8 +1,9 @@
 <section xmlns:th="http://www.thymeleaf.org"
          th:fragment="pagina(titulo, conteudo)"
          class="surface"
+         data-study-screen="catalog"
          aria-labelledby="titulo-estudo"
          lang="pt-BR">
-    <h1 id="titulo-estudo" th:text="${titulo}">Estudo</h1>
+    <h1 id="titulo-estudo" data-study-part th:text="${titulo}">Estudo</h1>
     <th:block th:replace="${conteudo}"></th:block>
 </section>

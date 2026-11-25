@@ -5,15 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="|${titulo} · Modo Tangente|">Modo Tangente</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script th:if="${autenticada}" th:src="@{/_static/gsap/3.14.2/dist/gsap.min.js}" defer></script>
+    <script th:if="${autenticada}" th:src="@{/js/study-motion.js}" defer blocking="render"></script>
 </head>
 <body>
 <a class="skip-link" href="#conteudo-principal">Ir para o conteúdo</a>
 <header class="site-header" th:if="${autenticada}">
     <nav class="site-nav container" aria-label="Navegação principal">
-        <a class="site-brand" th:href="@{/}">Modo Tangente</a>
+        <a class="site-brand" th:href="@{/}" data-study-nav="back">Modo Tangente</a>
         <div class="nav-links">
-            <a th:href="@{/estudo}">Catálogo</a>
-            <a th:href="@{/estudo/tentativas}">Minhas tentativas</a>
+            <a th:href="@{/estudo}" data-study-nav="forward">Catálogo</a>
+            <a th:href="@{/estudo/tentativas}" data-study-nav="forward">Minhas tentativas</a>
             <a th:if="${administrador}" th:href="@{/admin}">Administração</a>
         </div>
         <form method="post" th:action="@{/logout}">

@@ -2,31 +2,54 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/base :: pagina('Chat da questão', ~{:: corpo}, true)}">
 <body>
-<section class="surface chat-panel" th:fragment="corpo">
-    <h1>Chat da questão</h1>
+<section class="surface chat-panel" th:fragment="corpo" data-study-screen="chat">
+    <header class="study-screen-heading">
+        <h1>Chat da questão</h1>
+        <a class="study-back chat-close"
+           th:href="@{/estudo/tentativas/{tentativa}/questoes/{questao}(tentativa=${tentativaId},questao=${questao.id})}"
+           data-study-nav="chat-close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="m6 6 12 12M18 6 6 18"></path>
+            </svg>
+            Fechar chat
+        </a>
+    </header>
     <p class="chat-context" th:text="${questao.statement}">Enunciado</p>
-    <p><a th:href="@{/estudo/tentativas/{tentativa}/questoes/{questao}(tentativa=${tentativaId},questao=${questao.id})}">Voltar à questão</a></p>
-    <p class="empty-state" th:if="${#lists.isEmpty(mensagens)}">Ainda não há mensagens nesta conversa.</p>
-    <ol class="chat-history" aria-label="Histórico da conversa">
-        <li th:each="mensagem : ${mensagens}" th:classappend="${mensagem.senderRole == 'STUDENT'} ? 'chat-from-student' : 'chat-from-tutor'">
-            <strong th:text="${mensagem.senderRole == 'STUDENT'} ? 'Você' : 'Tutor'">Autor</strong>
-            <p class="chat-message" th:text="${mensagem.content}">Mensagem</p>
-            <p th:if="${mensagem.llmStatus == 'FAILED'}">O tutor não conseguiu responder.</p>
-            <p th:if="${mensagem.llmStatus == 'PROCESSING'}">A resposta do tutor está pendente.</p>
-            <button class="button button-secondary" type="button" hidden
-                    th:if="${mensagem.llmStatus == 'FAILED' or mensagem.llmStatus == 'PROCESSING'}"
-                    th:data-retry-id="${mensagem.requestId}"
-                    th:text="${mensagem.llmStatus == 'FAILED'} ? 'Recuperar mensagem' : 'Recuperar mensagem pendente'">
-                Recuperar mensagem
-            </button>
+    <div id="chat-history" th:fragment="historico">
+        <p class="empty-state" th:if="${#lists.isEmpty(mensagens)}">Ainda não há mensagens nesta conversa.</p>
+        <ol class="chat-history" aria-label="Histórico da conversa">
+            <li th:each="item : ${mensagens}" th:with="mensagem=${item.message}"
+                th:data-message-id="${mensagem.id}" th:data-request-id="${mensagem.requestId}"
+                th:classappend="${mensagem.senderRole == 'STUDENT'} ? 'chat-from-student' : 'chat-from-tutor'">
+                <strong th:text="${mensagem.senderRole == 'STUDENT'} ? 'Você' : 'Tutor'">Autor</strong>
+                <div class="chat-message" th:utext="${item.html}">Mensagem</div>
+                <p th:if="${mensagem.llmStatus == 'FAILED'}">O tutor não conseguiu responder.</p>
+                <p th:if="${mensagem.llmStatus == 'PROCESSING'}">A resposta do tutor está pendente.</p>
+                <button class="button button-secondary" type="button" hidden
+                        th:if="${mensagem.llmStatus == 'FAILED' or mensagem.llmStatus == 'PROCESSING'}"
+                        th:data-retry-id="${mensagem.requestId}"
+                        th:data-retry-content="${mensagem.content}"
+                        th:text="${mensagem.llmStatus == 'FAILED'} ? 'Recuperar mensagem' : 'Recuperar mensagem pendente'">
+                    Recuperar mensagem
+                </button>
+            </li>
+        </ol>
+    </div>
+    <template id="chat-message-preview">
+        <li class="chat-from-student chat-preview chat-entry-enter">
+            <strong>Você</strong>
+            <div class="chat-message"></div>
         </li>
-    </ol>
+    </template>
     <p id="chat-status" role="status" aria-live="polite"></p>
     <form id="chat-form" hidden
           th:data-endpoint="@{/api/conversations/{id}/messages(id=${conversaId})}"
+          th:data-history-url="@{/estudo/tentativas/{tentativa}/questoes/{questao}/chat/historico(tentativa=${tentativaId},questao=${questao.id})}"
           th:data-csrf-header="${_csrf.headerName}" th:data-csrf-token="${_csrf.token}">
         <label for="chat-content">Sua mensagem</label>
-        <textarea id="chat-content" name="content" rows="4" required></textarea>
+        <textarea id="chat-content" name="content" rows="4" aria-describedby="chat-input-hint" required></textarea>
+        <small id="chat-input-hint" class="muted">Enter para enviar · Shift+Enter para quebrar linha</small>
         <p><button class="button" type="submit">Enviar</button></p>
     </form>
     <noscript><p>Ative o JavaScript para enviar mensagens ao tutor.</p></noscript>

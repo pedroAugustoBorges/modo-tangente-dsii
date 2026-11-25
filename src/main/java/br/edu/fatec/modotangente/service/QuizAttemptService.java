@@ -1,7 +1,6 @@
 package br.edu.fatec.modotangente.service;
 
 import br.edu.fatec.modotangente.domain.QuestionAttempt;
-import br.edu.fatec.modotangente.domain.Quiz;
 import br.edu.fatec.modotangente.domain.QuizAttempt;
 import br.edu.fatec.modotangente.domain.QuizQuestionOption;
 import br.edu.fatec.modotangente.repository.QuestionAttemptRepository;
@@ -11,6 +10,7 @@ import br.edu.fatec.modotangente.repository.QuizRepository;
 import br.edu.fatec.modotangente.web.dto.QuestionAttemptProgress;
 import br.edu.fatec.modotangente.web.dto.QuizAttemptDetail;
 import br.edu.fatec.modotangente.web.dto.QuizAttemptSummary;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,9 +45,25 @@ public class QuizAttemptService {
 
     @Transactional
     public QuizAttemptSummary start(Long userId, Long quizId) {
-        Quiz quiz = quizRepository.findByIdAndActiveTrue(quizId)
+        quizRepository.findByIdAndActiveTrue(quizId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz não encontrado."));
+        return createAttempt(userId, quizId);
+    }
+
+    @Transactional
+    public QuizAttemptSummary resumeOrStart(Long userId, Long topicId, Long quizId) {
+        // Serialize lookup and creation with concurrent openings of the same quiz.
+        quizRepository.lockForCatalog(quizId)
+                .filter(quiz -> topicId.equals(quiz.getTopicId()) && Boolean.TRUE.equals(quiz.getActive())
+                        && Boolean.TRUE.equals(quiz.getTopic().getActive()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz não encontrado."));
 
+        return attemptRepository.findResumable(userId, quizId, PageRequest.of(0, 1)).stream()
+                .findFirst().map(QuizAttemptSummary::from)
+                .orElseGet(() -> createAttempt(userId, quizId));
+    }
+
+    private QuizAttemptSummary createAttempt(Long userId, Long quizId) {
         List<QuizQuestionProvider.QuestionReference> questions = questionProvider.listActiveForAttempt(quizId);
         if (questions == null) {
             throw new IllegalStateException("O catálogo retornou uma lista nula de questões.");
@@ -56,7 +72,7 @@ public class QuizAttemptService {
 
         QuizAttempt attempt = new QuizAttempt();
         attempt.setUserId(userId);
-        attempt.setQuizId(quiz.getId());
+        attempt.setQuizId(quizId);
         attempt.setStatus("IN_PROGRESS");
         QuizAttempt savedAttempt = attemptRepository.save(attempt);
 
@@ -65,7 +81,7 @@ public class QuizAttemptService {
                 .map(reference -> {
                     QuestionAttempt questionAttempt = new QuestionAttempt();
                     questionAttempt.setQuizAttemptId(savedAttempt.getId());
-                    questionAttempt.setQuizId(quiz.getId());
+                    questionAttempt.setQuizId(quizId);
                     questionAttempt.setQuestionId(reference.questionId());
                     return questionAttempt;
                 })

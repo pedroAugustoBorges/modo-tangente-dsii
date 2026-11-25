@@ -2,19 +2,23 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/base :: pagina(${quiz.title}, ~{:: corpo}, true)}">
 <body>
-<section class="surface" th:fragment="corpo">
-    <h1 th:text="${quiz.title}">Quiz</h1>
-    <p class="muted" th:if="${quiz.description}" th:text="${quiz.description}"></p>
-    <p class="feedback" th:if="${quiz.instructions}" th:text="${quiz.instructions}"></p>
+<section class="surface" th:fragment="corpo" data-study-screen="quiz">
+    <a class="study-back" th:href="@{/estudo/topicos/{id}(id=${quiz.topicId})}" data-study-nav="back" data-study-part>
+        <span class="study-back-arrow" aria-hidden="true">←</span>
+        Voltar ao tópico
+    </a>
+    <h1 data-study-part th:text="${quiz.title}">Quiz</h1>
+    <p class="muted" data-study-part th:if="${quiz.description}" th:text="${quiz.description}"></p>
+    <p class="feedback" data-study-part th:if="${quiz.instructions}" th:text="${quiz.instructions}"></p>
     <p th:unless="${disponivel}">Este quiz ainda não tem questões publicadas.</p>
     <p class="feedback feedback-error" th:if="${erro}" role="alert" th:text="${erro}"></p>
-    <div class="quiz-actions">
-        <form th:if="${disponivel}" method="post" th:action="@{/estudo/quizzes/{id}/tentativas(id=${quiz.id})}">
+    <div class="quiz-actions" data-study-part>
+        <form th:if="${disponivel}" method="post" th:action="@{/estudo/quizzes/{id}/tentativas(id=${quiz.id})}"
+              data-study-nav="forward">
             <button class="button" type="submit">Iniciar tentativa</button>
         </form>
-        <a class="button button-secondary" th:href="@{/estudo/tentativas}">Minhas tentativas</a>
+        <a class="button button-secondary" th:href="@{/estudo/tentativas}" data-study-nav="forward">Minhas tentativas</a>
     </div>
-    <p><a th:href="@{/estudo/topicos/{id}(id=${quiz.topicId})}">Voltar ao tópico</a></p>
 </section>
 </body>
 </html>

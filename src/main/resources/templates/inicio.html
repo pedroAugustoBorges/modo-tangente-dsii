@@ -2,22 +2,22 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/base :: pagina('Início', ~{:: corpo}, true)}">
 <body>
-<div th:fragment="corpo" class="study-home">
-    <section class="home-hero">
+<div th:fragment="corpo" class="study-home" data-study-screen="home">
+    <section class="home-hero" data-study-part>
         <div class="home-hero-copy">
             <p class="home-course">Desenvolvimento de Servidores II</p>
             <h1 th:text="|Olá, ${usuario.fullName}.|">Olá!</h1>
             <p>Pratique com quizzes e converse com o tutor sobre cada questão.</p>
-            <a class="button button-bright" th:href="@{/estudo}">Estudar por tópico <span aria-hidden="true">↗</span></a>
+            <a class="button button-bright" th:href="@{/estudo}" data-study-nav="forward">Estudar por tópico <span aria-hidden="true">↗</span></a>
         </div>
         <div class="home-graphic" aria-hidden="true"></div>
     </section>
-    <section class="surface home-history">
+    <section class="surface home-history" data-study-part>
         <div>
             <h2>Minhas tentativas</h2>
             <p>Retome um quiz de onde parou ou revise suas respostas.</p>
         </div>
-        <a class="button button-secondary" th:href="@{/estudo/tentativas}">Ver tentativas <span aria-hidden="true">→</span></a>
+        <a class="button button-secondary" th:href="@{/estudo/tentativas}" data-study-nav="forward">Ver tentativas <span aria-hidden="true">→</span></a>
     </section>
 </div>
 </body>

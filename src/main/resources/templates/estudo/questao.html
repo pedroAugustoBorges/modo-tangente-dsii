@@ -2,55 +2,76 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/base :: pagina(${titulo}, ~{:: corpo}, true)}">
 <body>
-<th:block th:fragment="corpo">
-    <section th:replace="~{estudo/pagina :: pagina(${titulo}, ~{:: conteudoQuestao})}">
-        <div th:fragment="conteudoQuestao">
-            <div class="progress-group">
-                <p th:text="|Questão ${posicao} de ${#lists.size(questoes)} · ${respondidas} respondidas|">Progresso</p>
-                <progress aria-label="Progresso da tentativa" th:value="${respondidas}" th:max="${#lists.size(questoes)}"></progress>
-            </div>
-            <div class="question-layout">
-                <div class="question-body">
-                <p class="feedback feedback-error" th:if="${erro}" role="alert" th:text="${erro}"></p>
-                <form method="post"
-                      th:action="@{/estudo/tentativas/{tentativa}/questoes/{questao}/resposta(tentativa=${tentativaId},questao=${questao.id})}">
-                    <fieldset class="question-options" th:disabled="${!editavel}">
-                        <legend th:text="${questao.statement}">Enunciado da questão</legend>
-                        <ul class="option-list">
-                            <li th:each="alternativa : ${questao.options}">
-                                <label>
-                                    <input type="radio" name="optionId" required th:value="${alternativa.id}"
-                                           th:checked="${alternativa.id == progresso.selectedOptionId}">
-                                    <span th:text="${alternativa.text}">Alternativa</span>
-                                </label>
-                            </li>
-                        </ul>
-                    </fieldset>
-                    <p th:if="${editavel}"><button class="button" type="submit">Responder</button></p>
-                </form>
-                <p class="feedback" th:if="${progresso.answered}"
-                   th:classappend="${progresso.isCorrect} ? 'feedback-success' : 'feedback-error'"
-                   th:text="${progresso.isCorrect} ? 'Resposta correta.' : 'Resposta incorreta.'"></p>
-                <p th:unless="${editavel or progresso.answered}">A tentativa está encerrada.</p>
-                <form method="post"
-                      th:action="@{/estudo/tentativas/{tentativa}/questoes/{questao}/chat(tentativa=${tentativaId},questao=${questao.id})}">
-                    <p><button class="button button-secondary" type="submit">Abrir chat da questão</button></p>
-                </form>
-                </div>
-                <nav class="question-navigation" aria-label="Questões da tentativa">
-                    <h2>Questões</h2>
-                    <ul class="catalog-list">
-                        <li th:each="item, estado : ${questoes}">
-                            <a th:href="@{/estudo/tentativas/{tentativa}/questoes/{questao}(tentativa=${tentativaId},questao=${item.questionId})}"
-                               th:aria-current="${item.questionId == questao.id} ? 'page' : null"
-                               th:text="|Questão ${estado.count} · ${item.answered ? 'Respondida' : 'Pendente'}|">Questão</a>
+<section th:fragment="corpo" class="surface question-screen" data-study-screen="question" aria-labelledby="titulo-estudo">
+    <a class="study-back" th:href="@{/estudo}" data-study-nav="back" data-study-part>
+        <span class="study-back-arrow" aria-hidden="true">←</span>
+        Voltar aos tópicos
+    </a>
+    <header class="study-screen-heading" data-study-part>
+        <h1 id="titulo-estudo" th:text="${titulo}">Questão do quiz</h1>
+        <form method="post"
+              th:action="@{/estudo/tentativas/{tentativa}/questoes/{questao}/chat(tentativa=${tentativaId},questao=${questao.id})}"
+              data-study-nav="chat-open">
+            <button class="button chat-launch" type="submit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M7 5h10a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-6l-4 3v-3a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3Z"></path>
+                    <path d="M8 10h8m-8 3h5"></path>
+                </svg>
+                Abrir chat
+            </button>
+        </form>
+    </header>
+    <div class="progress-group" data-study-part>
+        <p th:text="|Questão ${posicao} de ${#lists.size(questoes)} · ${respondidas} respondidas|">Progresso</p>
+        <progress aria-label="Progresso da tentativa" th:value="${respondidas}" th:max="${#lists.size(questoes)}"></progress>
+    </div>
+    <div class="question-layout">
+        <div class="question-body" th:classappend="${respostaRegistrada} ? 'answer-confirmed'">
+            <p class="feedback feedback-error" th:if="${erro}" role="alert" th:text="${erro}" data-study-part></p>
+            <form method="post" th:data-question-answer="${editavel} ? 'true' : null"
+                  th:action="@{/estudo/tentativas/{tentativa}/questoes/{questao}/resposta(tentativa=${tentativaId},questao=${questao.id})}">
+                <fieldset class="question-options" th:disabled="${!editavel}">
+                    <legend data-study-part th:text="${questao.statement}">Enunciado da questão</legend>
+                    <ul class="option-list">
+                        <li th:each="alternativa : ${questao.options}" data-study-part
+                            th:with="confirmada=${progresso.answered and progresso.isCorrect and alternativa.id == progresso.selectedOptionId}">
+                            <label th:classappend="${confirmada} ? 'option-correct'">
+                                <input type="radio" name="optionId" required th:value="${alternativa.id}"
+                                       th:checked="${alternativa.id == progresso.selectedOptionId}">
+                                <span class="option-text" th:text="${alternativa.text}">Alternativa</span>
+                                <span class="answer-correct-mark" th:if="${confirmada}"
+                                      th:data-answer-celebration="${respostaRegistrada} ? 'true' : null">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                        <path d="M7 11v8H4v-8h3Zm0 7h10a2 2 0 0 0 2-1.6l1-4.8A2 2 0 0 0 18 9h-4l.7-3.1a1.6 1.6 0 0 0-2.9-1.1L7 11"></path>
+                                    </svg>
+                                    <span class="study-visually-hidden" role="status">Resposta correta.</span>
+                                </span>
+                            </label>
                         </li>
                     </ul>
-                    <p><a th:href="@{/estudo/tentativas}">Minhas tentativas</a></p>
-                </nav>
-            </div>
+                </fieldset>
+                <p th:if="${editavel}" data-study-part><button class="button" type="submit">Responder</button></p>
+            </form>
+            <p class="feedback feedback-error" role="status" th:if="${progresso.answered and !progresso.isCorrect}">
+                Resposta incorreta.
+            </p>
+            <p th:unless="${editavel or progresso.answered}">A tentativa está encerrada.</p>
         </div>
-    </section>
-</th:block>
+        <nav class="question-navigation" aria-label="Questões da tentativa" data-study-part>
+            <h2>Questões</h2>
+            <ul class="catalog-list">
+                <li th:each="item, estado : ${questoes}">
+                    <a th:href="@{/estudo/tentativas/{tentativa}/questoes/{questao}(tentativa=${tentativaId},questao=${item.questionId})}"
+                       th:aria-current="${item.questionId == questao.id} ? 'page' : null"
+                       th:data-study-nav="${estado.count < posicao} ? 'back' : 'forward'"
+                       th:text="|Questão ${estado.count} · ${item.answered ? 'Respondida' : 'Pendente'}|">Questão</a>
+                </li>
+            </ul>
+            <p><a th:href="@{/estudo/tentativas}" data-study-nav="back">Minhas tentativas</a></p>
+        </nav>
+    </div>
+</section>
 </body>
 </html>

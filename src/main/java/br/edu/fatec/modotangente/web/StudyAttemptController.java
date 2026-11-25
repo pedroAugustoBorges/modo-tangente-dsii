@@ -106,6 +106,7 @@ public class StudyAttemptController {
         } else {
             try {
                 attempts.answer(userId, attemptId, questionId, optionId);
+                redirect.addFlashAttribute("respostaRegistrada", true);
             } catch (ResponseStatusException exception) {
                 if (exception.getStatusCode() == HttpStatus.CONFLICT) {
                     redirect.addFlashAttribute("erro", "Esta questão não aceita mais respostas.");
